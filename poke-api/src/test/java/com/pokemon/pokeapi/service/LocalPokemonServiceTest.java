@@ -1,0 +1,94 @@
+package com.pokemon.pokeapi.service;
+
+import com.pokemon.pokeapi.dto.pokemon.LocalPokemonDTO;
+import com.pokemon.pokeapi.dto.pokemon.UpdatePokemonDTO;
+import com.pokemon.pokeapi.exception.BadRequestException;
+import com.pokemon.pokeapi.exception.ResourceNotFoundException;
+import com.pokemon.pokeapi.model.Pokemon;
+import com.pokemon.pokeapi.repository.PokemonRepository;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import java.util.Map;
+import java.util.Optional;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+public class LocalPokemonServiceTest {
+
+    @Mock
+    private PokemonRepository pokemonRepository;
+
+    @Mock
+    private PokeApiService pokeApiService;
+
+    @InjectMocks
+    private LocalPokemonService localPokemonService;
+
+    @Test
+    void testSyncPokemon_Success() {
+        when(pokemonRepository.existsById(1L)).thenReturn(false);
+        when(pokeApiService.getPokemonById(1L)).thenReturn(Map.of("id", 1, "name", "bulbasaur", "weight", 69, "height", 7, "base_experience", 64));
+        when(pokeApiService.getPokemonSpecies(1L)).thenReturn(Map.of());
+        when(pokemonRepository.save(any(Pokemon.class))).thenAnswer(i -> i.getArguments()[0]);
+
+        LocalPokemonDTO result = localPokemonService.syncPokemon(1L);
+        assertEquals(1L, result.id());
+        assertEquals("bulbasaur", result.name());
+    }
+
+    @Test
+    void testSyncPokemon_AlreadyExists_ThrowsBadRequest() {
+        when(pokemonRepository.existsById(1L)).thenReturn(true);
+        assertThrows(BadRequestException.class, () -> localPokemonService.syncPokemon(1L));
+    }
+
+    @Test
+    void testGetLocalPokemonById_Success() {
+        Pokemon p = new Pokemon();
+        p.setId(1L);
+        when(pokemonRepository.findById(1L)).thenReturn(Optional.of(p));
+        LocalPokemonDTO result = localPokemonService.getLocalPokemonById(1L);
+        assertEquals(1L, result.id());
+    }
+
+    @Test
+    void testGetLocalPokemonById_NotFound_ThrowsException() {
+        when(pokemonRepository.findById(1L)).thenReturn(Optional.empty());
+        assertThrows(ResourceNotFoundException.class, () -> localPokemonService.getLocalPokemonById(1L));
+    }
+
+    @Test
+    void testUpdateLocalPokemon_Success() {
+        Pokemon p = new Pokemon();
+        p.setId(1L);
+        when(pokemonRepository.findById(1L)).thenReturn(Optional.of(p));
+        when(pokemonRepository.save(any(Pokemon.class))).thenAnswer(i -> i.getArguments()[0]);
+        
+        LocalPokemonDTO result = localPokemonService.updateLocalPokemon(1L, new UpdatePokemonDTO("Bulby", "Kanto", "Seed", "Cool"));
+        assertEquals("Bulby", result.customName());
+    }
+
+    @Test
+    void testUpdateLocalPokemon_NotFound_ThrowsException() {
+        when(pokemonRepository.findById(1L)).thenReturn(Optional.empty());
+        assertThrows(ResourceNotFoundException.class, () -> localPokemonService.updateLocalPokemon(1L, new UpdatePokemonDTO(null, null, null, null)));
+    }
+
+    @Test
+    void testDeleteLocalPokemon_Success() {
+        when(pokemonRepository.existsById(1L)).thenReturn(true);
+        localPokemonService.deleteLocalPokemon(1L);
+        verify(pokemonRepository, times(1)).deleteById(1L);
+    }
+
+    @Test
+    void testDeleteLocalPokemon_NotFound_ThrowsException() {
+        when(pokemonRepository.existsById(1L)).thenReturn(false);
+        assertThrows(ResourceNotFoundException.class, () -> localPokemonService.deleteLocalPokemon(1L));
+    }
+}

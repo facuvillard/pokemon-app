@@ -1,0 +1,26 @@
+spring:
+  datasource:
+    url: jdbc:sqlite:./data/pokemon.db
+    driver-class-name: org.sqlite.JDBC
+  jpa:
+    database-platform: org.hibernate.community.dialect.SQLiteDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=500,expireAfterWrite=3600s
+
+server:
+  port: 8080
+
+pokeapi:
+  base-url: https://pokeapi.co/api/v2
+
+jwt:
+  secret: a-long-random-secret-key-for-jwt-token-generation-min-256-bits-long-enough
+  expiration: 86400000
