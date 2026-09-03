@@ -45,29 +45,15 @@ export default function HomePage() {
     <Container size="xl">
       <Title order={1} mb="lg" ta="center">Pokédex</Title>
       
-      <Group justify="space-between" mb="xl">
-        <TextInput
-          placeholder="Search Pokémon..."
-          leftSection={<IconSearch size={16} />}
-          value={search}
-          onChange={(e) => setSearch(e.currentTarget.value)}
-          size="md"
-          radius="md"
-          style={{ flex: 1 }}
-        />
-        <Select
-          value={pageSize}
-          onChange={(val) => { setPageSize(val); setPage(1); }}
-          data={[
-            { value: '20', label: '20 per page' },
-            { value: '50', label: '50 per page' },
-            { value: '100', label: '100 per page' }
-          ]}
-          size="md"
-          radius="md"
-          w={150}
-        />
-      </Group>
+      <TextInput
+        placeholder="Search Pokémon..."
+        leftSection={<IconSearch size={16} />}
+        value={search}
+        onChange={(e) => setSearch(e.currentTarget.value)}
+        mb="xl"
+        size="md"
+        radius="md"
+      />
 
       {loading ? (
         <Center h={400}>
@@ -89,10 +75,22 @@ export default function HomePage() {
             </Grid>
           )}
 
-          {totalPages > 1 && (
-            <Center mt="xl">
-              <Pagination total={totalPages} value={page} onChange={setPage} />
-            </Center>
+          {pokemon.length > 0 && (
+            <Group justify="center" mt="xl" gap="xl">
+              {totalPages > 1 && (
+                <Pagination total={totalPages} value={page} onChange={setPage} />
+              )}
+              <Select
+                value={pageSize}
+                onChange={(val) => { setPageSize(val); setPage(1); }}
+                data={[
+                  { value: '20', label: '20 / page' },
+                  { value: '50', label: '50 / page' },
+                  { value: '100', label: '100 / page' }
+                ]}
+                w={120}
+              />
+            </Group>
           )}
         </>
       )}
