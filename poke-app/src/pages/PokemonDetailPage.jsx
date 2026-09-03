@@ -17,6 +17,7 @@ export default function PokemonDetailPage() {
   const [pokemon, setPokemon] = useState(null);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
+  const [isSynced, setIsSynced] = useState(false);
 
   useEffect(() => {
     const fetchDetail = async () => {
@@ -33,13 +34,27 @@ export default function PokemonDetailPage() {
         setLoading(false);
       }
     };
+
+    const checkSyncStatus = async () => {
+      if (isAuthenticated) {
+        try {
+          await pokemonService.getLocalPokemonById(id);
+          setIsSynced(true);
+        } catch (error) {
+          setIsSynced(false);
+        }
+      }
+    };
+
     fetchDetail();
-  }, [id]);
+    checkSyncStatus();
+  }, [id, isAuthenticated]);
 
   const handleSync = async () => {
     setSyncing(true);
     try {
       await pokemonService.syncPokemon(id);
+      setIsSynced(true);
       notifications.show({
         title: 'Success!',
         message: `${pokemon.name} has been synced to your collection.`,
@@ -97,12 +112,13 @@ export default function PokemonDetailPage() {
               <Center mt="xl">
                 <Button 
                   size="md" 
-                  leftSection={<IconCloudDownload size={20} />} 
+                  leftSection={isSynced ? null : <IconCloudDownload size={20} />} 
                   onClick={handleSync}
                   loading={syncing}
+                  disabled={isSynced}
                   fullWidth
                 >
-                  Sync to My Collection
+                  {isSynced ? 'Already Synced' : 'Sync to My Collection'}
                 </Button>
               </Center>
             )}
