@@ -1,9 +1,9 @@
 package com.pokemon.pokeapi.service;
 
-import com.pokemon.pokeapi.dto.external.PokeApiListResponse;
-import com.pokemon.pokeapi.dto.external.PokeApiPokemon;
-import com.pokemon.pokeapi.dto.external.PokeApiSpecies;
-import com.pokemon.pokeapi.dto.external.PokeApiEvolutionChainData;
+import com.pokemon.pokeapi.dto.external.PokeApiListResponseDTO;
+import com.pokemon.pokeapi.dto.external.PokeApiPokemonDTO;
+import com.pokemon.pokeapi.dto.external.PokeApiSpeciesDTO;
+import com.pokemon.pokeapi.dto.external.PokeApiEvolutionChainDataDTO;
 import com.pokemon.pokeapi.dto.pokemon.*;
 import com.pokemon.pokeapi.exception.ResourceNotFoundException;
 import com.pokemon.pokeapi.utils.PokeApiMapper;
@@ -19,10 +19,11 @@ import java.util.List;
 public class PokemonService {
 
     private final PokeApiClient pokeApiClient;
+    private final PokeApiMapper pokeApiMapper;
 
     public PokemonListResponseDTO listPokemon(int page, int size) {
         int offset = page * size;
-        PokeApiListResponse response = pokeApiClient.getPokemonList(offset, size);
+        PokeApiListResponseDTO response = pokeApiClient.getPokemonList(offset, size);
         if (response == null) {
             return new PokemonListResponseDTO(List.of(), page, size, 0, 0);
         }
@@ -35,10 +36,10 @@ public class PokemonService {
         if (response.results() != null) {
             for (var item : response.results()) {
                 String url = item.url();
-                Long id = PokeApiMapper.extractIdFromUrl(url);
+                Long id = pokeApiMapper.extractIdFromUrl(url);
                 if (id != null) {
                     try {
-                        PokeApiPokemon detail = pokeApiClient.getPokemonById(id);
+                        PokeApiPokemonDTO detail = pokeApiClient.getPokemonById(id);
                         content.add(mapToListItemDTO(detail));
                     } catch (Exception e) {
                         // Skip if detail fails
@@ -52,16 +53,16 @@ public class PokemonService {
 
     public PokemonDetailDTO getPokemonDetail(long id) {
         try {
-            PokeApiPokemon data = pokeApiClient.getPokemonById(id);
-            PokeApiSpecies species = pokeApiClient.getPokemonSpecies(id);
+            PokeApiPokemonDTO data = pokeApiClient.getPokemonById(id);
+            PokeApiSpeciesDTO species = pokeApiClient.getPokemonSpecies(id);
             
-            String description = PokeApiMapper.extractEnglishDescription(species);
+            String description = pokeApiMapper.extractEnglishDescription(species);
             
             List<EvolutionNodeDTO> evolutionChain = new ArrayList<>();
             if (species != null && species.evolutionChain() != null && species.evolutionChain().url() != null) {
                 String url = species.evolutionChain().url();
-                PokeApiEvolutionChainData chainData = pokeApiClient.getEvolutionChain(url);
-                evolutionChain = PokeApiMapper.parseEvolutionChain(chainData);
+                PokeApiEvolutionChainDataDTO chainData = pokeApiClient.getEvolutionChain(url);
+                evolutionChain = pokeApiMapper.parseEvolutionChain(chainData);
             }
 
             return mapToDetailDTO(data, description, evolutionChain);
@@ -70,7 +71,7 @@ public class PokemonService {
         }
     }
 
-    private PokemonListItemDTO mapToListItemDTO(PokeApiPokemon data) {
+    private PokemonListItemDTO mapToListItemDTO(PokeApiPokemonDTO data) {
         Long id = data.id();
         String name = data.name();
         String spriteUrl = data.sprites() != null ? data.sprites().frontDefault() : null;
@@ -93,7 +94,7 @@ public class PokemonService {
         return new PokemonListItemDTO(id, name, spriteUrl, types, weight, abilities);
     }
 
-    private PokemonDetailDTO mapToDetailDTO(PokeApiPokemon data, String description, List<EvolutionNodeDTO> evolutionChain) {
+    private PokemonDetailDTO mapToDetailDTO(PokeApiPokemonDTO data, String description, List<EvolutionNodeDTO> evolutionChain) {
         Long id = data.id();
         String name = data.name();
         String spriteUrl = data.sprites() != null ? data.sprites().frontDefault() : null;

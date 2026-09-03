@@ -1,18 +1,25 @@
 package com.pokemon.pokeapi.utils;
 
-import com.pokemon.pokeapi.dto.external.PokeApiEvolutionChainData;
-import com.pokemon.pokeapi.dto.external.PokeApiPokemon;
-import com.pokemon.pokeapi.dto.external.PokeApiSpecies;
+import com.pokemon.pokeapi.dto.external.PokeApiEvolutionChainDataDTO;
+import com.pokemon.pokeapi.dto.external.PokeApiPokemonDTO;
+import com.pokemon.pokeapi.dto.external.PokeApiSpeciesDTO;
 import com.pokemon.pokeapi.dto.pokemon.EvolutionNodeDTO;
 import com.pokemon.pokeapi.model.Pokemon;
 import com.pokemon.pokeapi.model.PokemonStat;
 
+import org.mapstruct.AfterMapping;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
-public class PokeApiMapper {
+@Mapper(componentModel = "spring")
+public abstract class PokeApiMapper {
 
-    public static String extractEnglishDescription(PokeApiSpecies speciesData) {
+    public String extractEnglishDescription(PokeApiSpeciesDTO speciesData) {
         if (speciesData == null || speciesData.flavorTextEntries() == null) return "";
         for (var entry : speciesData.flavorTextEntries()) {
             if (entry.language() != null && "en".equals(entry.language().name())) {
@@ -23,14 +30,14 @@ public class PokeApiMapper {
         return "";
     }
 
-    public static List<EvolutionNodeDTO> parseEvolutionChain(PokeApiEvolutionChainData chainData) {
+    public List<EvolutionNodeDTO> parseEvolutionChain(PokeApiEvolutionChainDataDTO chainData) {
         List<EvolutionNodeDTO> list = new ArrayList<>();
         if (chainData == null || chainData.chain() == null) return list;
         walkEvolutionTree(chainData.chain(), list);
         return list;
     }
 
-    private static void walkEvolutionTree(PokeApiEvolutionChainData.PokeApiChainLink node, List<EvolutionNodeDTO> list) {
+    private void walkEvolutionTree(PokeApiEvolutionChainDataDTO.PokeApiChainLinkDTO node, List<EvolutionNodeDTO> list) {
         if (node == null) return;
         var species = node.species();
         if (species != null) {
@@ -54,7 +61,7 @@ public class PokeApiMapper {
         }
     }
 
-    public static Long extractIdFromUrl(String url) {
+    public Long extractIdFromUrl(String url) {
         if (url == null) return null;
         String[] parts = url.split("/");
         try {
@@ -64,53 +71,32 @@ public class PokeApiMapper {
         }
     }
 
-    public static Pokemon mapToPokemonEntity(PokeApiPokemon data, String description) {
-        Long id = data.id();
-        String name = data.name();
-        String spriteUrl = data.sprites() != null ? data.sprites().frontDefault() : null;
-        Integer weight = data.weight();
-        Integer height = data.height();
-        Integer baseExp = data.baseExperience();
+    @Mapping(target = "spriteUrl", source = "data.sprites.frontDefault")
+    @Mapping(target = "types", source = "data.types")
+    @Mapping(target = "abilities", source = "data.abilities")
+    @Mapping(target = "stats", ignore = true)
+    public abstract Pokemon toEntity(PokeApiPokemonDTO data, String description);
 
-        List<String> types = new ArrayList<>();
-        if (data.types() != null) {
-            for (var t : data.types()) {
-                if (t.type() != null) types.add(t.type().name());
-            }
-        }
+    public String mapType(PokeApiPokemonDTO.PokeApiTypeSlotDTO t) {
+        return t != null && t.type() != null ? t.type().name() : null;
+    }
 
-        List<String> abilities = new ArrayList<>();
-        if (data.abilities() != null) {
-            for (var a : data.abilities()) {
-                if (a.ability() != null) abilities.add(a.ability().name());
-            }
-        }
+    public String mapAbility(PokeApiPokemonDTO.PokeApiAbilitySlotDTO a) {
+        return a != null && a.ability() != null ? a.ability().name() : null;
+    }
 
-        Pokemon pokemon = Pokemon.builder()
-                .id(id)
-                .name(name)
-                .spriteUrl(spriteUrl)
-                .weight(weight)
-                .height(height)
-                .baseExperience(baseExp)
-                .description(description)
-                .types(types)
-                .abilities(abilities)
-                .build();
-
-        List<PokemonStat> stats = new ArrayList<>();
+    @AfterMapping
+    protected void linkStats(PokeApiPokemonDTO data, @MappingTarget Pokemon pokemon) {
         if (data.stats() != null) {
-            for (var s : data.stats()) {
-                if (s.stat() != null) {
-                    stats.add(PokemonStat.builder()
-                            .statName(s.stat().name())
-                            .baseStat(s.baseStat())
-                            .pokemon(pokemon)
-                            .build());
-                }
-            }
+            List<PokemonStat> stats = data.stats().stream()
+                .filter(s -> s.stat() != null)
+                .map(s -> PokemonStat.builder()
+                        .statName(s.stat().name())
+                        .baseStat(s.baseStat())
+                        .pokemon(pokemon)
+                        .build())
+                .collect(Collectors.toList());
+            pokemon.setStats(stats);
         }
-        pokemon.setStats(stats);
-        return pokemon;
     }
 }

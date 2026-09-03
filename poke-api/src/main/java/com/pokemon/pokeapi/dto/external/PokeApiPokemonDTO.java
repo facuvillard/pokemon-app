@@ -5,26 +5,26 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record PokeApiPokemon(
+public record PokeApiPokemonDTO(
     Long id,
     String name,
     Integer weight,
     Integer height,
     @JsonProperty("base_experience") Integer baseExperience,
-    PokeApiSprites sprites,
-    List<PokeApiTypeSlot> types,
-    List<PokeApiAbilitySlot> abilities,
-    List<PokeApiStatSlot> stats
+    PokeApiSpritesDTO sprites,
+    List<PokeApiTypeSlotDTO> types,
+    List<PokeApiAbilitySlotDTO> abilities,
+    List<PokeApiStatSlotDTO> stats
 ) {
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record PokeApiSprites(@JsonProperty("front_default") String frontDefault) {}
+    public record PokeApiSpritesDTO(@JsonProperty("front_default") String frontDefault) {}
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record PokeApiTypeSlot(PokeApiNamedResource type) {}
+    public record PokeApiTypeSlotDTO(PokeApiNamedResourceDTO type) {}
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record PokeApiAbilitySlot(PokeApiNamedResource ability) {}
+    public record PokeApiAbilitySlotDTO(PokeApiNamedResourceDTO ability) {}
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record PokeApiStatSlot(@JsonProperty("base_stat") Integer baseStat, PokeApiNamedResource stat) {}
+    public record PokeApiStatSlotDTO(@JsonProperty("base_stat") Integer baseStat, PokeApiNamedResourceDTO stat) {}
 }

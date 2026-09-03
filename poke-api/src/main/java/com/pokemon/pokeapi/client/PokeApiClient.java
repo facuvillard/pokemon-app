@@ -1,9 +1,9 @@
 package com.pokemon.pokeapi.client;
 
-import com.pokemon.pokeapi.dto.external.PokeApiEvolutionChainData;
-import com.pokemon.pokeapi.dto.external.PokeApiListResponse;
-import com.pokemon.pokeapi.dto.external.PokeApiPokemon;
-import com.pokemon.pokeapi.dto.external.PokeApiSpecies;
+import com.pokemon.pokeapi.dto.external.PokeApiEvolutionChainDataDTO;
+import com.pokemon.pokeapi.dto.external.PokeApiListResponseDTO;
+import com.pokemon.pokeapi.dto.external.PokeApiPokemonDTO;
+import com.pokemon.pokeapi.dto.external.PokeApiSpeciesDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
@@ -20,25 +20,25 @@ public class PokeApiClient {
     private String baseUrl;
 
     @Cacheable("pokemonList")
-    public PokeApiListResponse getPokemonList(int offset, int limit) {
+    public PokeApiListResponseDTO getPokemonList(int offset, int limit) {
         String url = baseUrl + "/pokemon?offset=" + offset + "&limit=" + limit;
-        return restTemplate.getForObject(url, PokeApiListResponse.class);
+        return restTemplate.getForObject(url, PokeApiListResponseDTO.class);
     }
 
     @Cacheable("pokemonDetail")
-    public PokeApiPokemon getPokemonById(long id) {
+    public PokeApiPokemonDTO getPokemonById(long id) {
         String url = baseUrl + "/pokemon/" + id;
-        return restTemplate.getForObject(url, PokeApiPokemon.class);
+        return restTemplate.getForObject(url, PokeApiPokemonDTO.class);
     }
 
     @Cacheable("pokemonSpecies")
-    public PokeApiSpecies getPokemonSpecies(long id) {
+    public PokeApiSpeciesDTO getPokemonSpecies(long id) {
         String url = baseUrl + "/pokemon-species/" + id;
-        return restTemplate.getForObject(url, PokeApiSpecies.class);
+        return restTemplate.getForObject(url, PokeApiSpeciesDTO.class);
     }
 
     @Cacheable("evolutionChain")
-    public PokeApiEvolutionChainData getEvolutionChain(String url) {
-        return restTemplate.getForObject(url, PokeApiEvolutionChainData.class);
+    public PokeApiEvolutionChainDataDTO getEvolutionChain(String url) {
+        return restTemplate.getForObject(url, PokeApiEvolutionChainDataDTO.class);
     }
 }

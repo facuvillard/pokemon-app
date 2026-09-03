@@ -1,23 +1,27 @@
 package com.pokemon.pokeapi.service;
 
 import com.pokemon.pokeapi.client.PokeApiClient;
-import com.pokemon.pokeapi.dto.external.PokeApiListResponse;
-import com.pokemon.pokeapi.dto.external.PokeApiNamedResource;
-import com.pokemon.pokeapi.dto.external.PokeApiPokemon;
-import com.pokemon.pokeapi.dto.external.PokeApiSpecies;
+import com.pokemon.pokeapi.dto.external.PokeApiListResponseDTO;
+import com.pokemon.pokeapi.dto.external.PokeApiNamedResourceDTO;
+import com.pokemon.pokeapi.dto.external.PokeApiPokemonDTO;
+import com.pokemon.pokeapi.dto.external.PokeApiSpeciesDTO;
 import com.pokemon.pokeapi.dto.pokemon.PokemonDetailDTO;
 import com.pokemon.pokeapi.dto.pokemon.PokemonListResponseDTO;
 import com.pokemon.pokeapi.exception.ResourceNotFoundException;
+import com.pokemon.pokeapi.utils.PokeApiMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.anyString;
 
 @ExtendWith(MockitoExtension.class)
 public class PokemonServiceTest {
@@ -25,17 +29,21 @@ public class PokemonServiceTest {
     @Mock
     private PokeApiClient pokeApiClient;
 
+    @Mock
+    private PokeApiMapper pokeApiMapper;
+
     @InjectMocks
     private PokemonService pokemonService;
 
     @Test
     void testListPokemon_ReturnsPagedResponse() {
-        PokeApiListResponse listResp = new PokeApiListResponse(
-            1, null, null, List.of(new PokeApiNamedResource("bulbasaur", "https://pokeapi.co/api/v2/pokemon/1/"))
+        PokeApiListResponseDTO listResp = new PokeApiListResponseDTO(
+            1, null, null, List.of(new PokeApiNamedResourceDTO("bulbasaur", "https://pokeapi.co/api/v2/pokemon/1/"))
         );
-        PokeApiPokemon detail = new PokeApiPokemon(1L, "bulbasaur", 69, null, null, null, null, null, null);
+        PokeApiPokemonDTO detail = new PokeApiPokemonDTO(1L, "bulbasaur", 69, null, null, null, null, null, null);
 
         when(pokeApiClient.getPokemonList(anyInt(), anyInt())).thenReturn(listResp);
+        when(pokeApiMapper.extractIdFromUrl(anyString())).thenReturn(1L);
         when(pokeApiClient.getPokemonById(1L)).thenReturn(detail);
 
         PokemonListResponseDTO result = pokemonService.listPokemon(0, 20);
@@ -47,14 +55,15 @@ public class PokemonServiceTest {
 
     @Test
     void testGetPokemonDetail_ReturnsCombinedData() {
-        PokeApiPokemon data = new PokeApiPokemon(1L, "bulbasaur", 69, 7, null, null, null, null, null);
-        PokeApiSpecies species = new PokeApiSpecies(
-            List.of(new PokeApiSpecies.PokeApiFlavorText("A strange seed was planted.", new PokeApiNamedResource("en", null))),
+        PokeApiPokemonDTO data = new PokeApiPokemonDTO(1L, "bulbasaur", 69, 7, null, null, null, null, null);
+        PokeApiSpeciesDTO species = new PokeApiSpeciesDTO(
+            List.of(new PokeApiSpeciesDTO.PokeApiFlavorTextDTO("A strange seed was planted.", new PokeApiNamedResourceDTO("en", null))),
             null
         );
 
         when(pokeApiClient.getPokemonById(1L)).thenReturn(data);
         when(pokeApiClient.getPokemonSpecies(1L)).thenReturn(species);
+        when(pokeApiMapper.extractEnglishDescription(species)).thenReturn("A strange seed was planted.");
 
         PokemonDetailDTO result = pokemonService.getPokemonDetail(1L);
 

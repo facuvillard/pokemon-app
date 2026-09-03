@@ -1,8 +1,8 @@
 package com.pokemon.pokeapi.service;
 
 import com.pokemon.pokeapi.client.PokeApiClient;
-import com.pokemon.pokeapi.dto.external.PokeApiPokemon;
-import com.pokemon.pokeapi.dto.external.PokeApiSpecies;
+import com.pokemon.pokeapi.dto.external.PokeApiPokemonDTO;
+import com.pokemon.pokeapi.dto.external.PokeApiSpeciesDTO;
 import com.pokemon.pokeapi.dto.pokemon.LocalPokemonDTO;
 import com.pokemon.pokeapi.dto.pokemon.UpdatePokemonDTO;
 import com.pokemon.pokeapi.exception.BadRequestException;
@@ -10,6 +10,7 @@ import com.pokemon.pokeapi.exception.ResourceNotFoundException;
 import com.pokemon.pokeapi.mapper.PokemonMapper;
 import com.pokemon.pokeapi.model.Pokemon;
 import com.pokemon.pokeapi.repository.PokemonRepository;
+import com.pokemon.pokeapi.utils.PokeApiMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -33,6 +34,9 @@ public class LocalPokemonServiceTest {
 
     @Mock
     private PokemonMapper pokemonMapper;
+    
+    @Mock
+    private PokeApiMapper pokeApiMapper;
 
     @InjectMocks
     private LocalPokemonService localPokemonService;
@@ -40,8 +44,15 @@ public class LocalPokemonServiceTest {
     @Test
     void testSyncPokemon_Success() {
         when(pokemonRepository.existsById(1L)).thenReturn(false);
-        when(pokeApiClient.getPokemonById(1L)).thenReturn(new PokeApiPokemon(1L, "bulbasaur", 69, 7, 64, null, null, null, null));
-        when(pokeApiClient.getPokemonSpecies(1L)).thenReturn(new PokeApiSpecies(null, null));
+        PokeApiPokemonDTO data = new PokeApiPokemonDTO(1L, "bulbasaur", 69, 7, 64, null, null, null, null);
+        when(pokeApiClient.getPokemonById(1L)).thenReturn(data);
+        PokeApiSpeciesDTO species = new PokeApiSpeciesDTO(null, null);
+        when(pokeApiClient.getPokemonSpecies(1L)).thenReturn(species);
+        
+        when(pokeApiMapper.extractEnglishDescription(species)).thenReturn("description");
+        Pokemon entity = Pokemon.builder().id(1L).name("bulbasaur").build();
+        when(pokeApiMapper.toEntity(data, "description")).thenReturn(entity);
+        
         when(pokemonRepository.save(any(Pokemon.class))).thenAnswer(i -> i.getArguments()[0]);
         
         LocalPokemonDTO mockDto = new LocalPokemonDTO(1L, "bulbasaur", null, 0, 0, 0, null, null, null, null, null, null, null, null, null, null);

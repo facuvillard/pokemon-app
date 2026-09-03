@@ -25,6 +25,7 @@ public class LocalPokemonService {
     private final PokemonRepository pokemonRepository;
     private final PokeApiClient pokeApiClient;
     private final PokemonMapper pokemonMapper;
+    private final PokeApiMapper pokeApiMapper;
 
     public LocalPokemonDTO syncPokemon(long id) {
         if (pokemonRepository.existsById(id)) {
@@ -34,9 +35,9 @@ public class LocalPokemonService {
         try {
             var data = pokeApiClient.getPokemonById(id);
             var species = pokeApiClient.getPokemonSpecies(id);
-            String description = PokeApiMapper.extractEnglishDescription(species);
+            String description = pokeApiMapper.extractEnglishDescription(species);
 
-            Pokemon entity = PokeApiMapper.mapToPokemonEntity(data, description);
+            Pokemon entity = pokeApiMapper.toEntity(data, description);
             entity.setSyncedAt(LocalDateTime.now());
 
             return pokemonMapper.toLocalPokemonDTO(pokemonRepository.save(entity));

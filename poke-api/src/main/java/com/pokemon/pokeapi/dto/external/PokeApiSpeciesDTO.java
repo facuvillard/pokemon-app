@@ -5,16 +5,16 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record PokeApiSpecies(
-    @JsonProperty("flavor_text_entries") List<PokeApiFlavorText> flavorTextEntries,
-    @JsonProperty("evolution_chain") PokeApiEvolutionChainRef evolutionChain
+public record PokeApiSpeciesDTO(
+    @JsonProperty("flavor_text_entries") List<PokeApiFlavorTextDTO> flavorTextEntries,
+    @JsonProperty("evolution_chain") PokeApiEvolutionChainRefDTO evolutionChain
 ) {
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record PokeApiFlavorText(
+    public record PokeApiFlavorTextDTO(
         @JsonProperty("flavor_text") String flavorText,
-        PokeApiNamedResource language
+        PokeApiNamedResourceDTO language
     ) {}
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record PokeApiEvolutionChainRef(String url) {}
+    public record PokeApiEvolutionChainRefDTO(String url) {}
 }
