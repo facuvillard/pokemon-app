@@ -12,7 +12,7 @@ export default function MyPokemonPage() {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
-  
+
   const [editingPokemon, setEditingPokemon] = useState(null);
 
   const fetchLocalPokemon = async (pageNumber) => {
@@ -99,13 +99,13 @@ export default function MyPokemonPage() {
               <Table.Tbody>
                 {pokemon.map((p) => (
                   <Table.Tr key={p.id}>
-                    <Table.Td>#{String(p.originalId).padStart(3, '0')}</Table.Td>
+                    <Table.Td>#{String(p.id).padStart(3, '0')}</Table.Td>
                     <Table.Td>
-                      <Image 
-                        src={p.spriteUrl} 
-                        w={40} 
-                        h={40} 
-                        fit="contain" 
+                      <Image
+                        src={p.spriteUrl}
+                        w={40}
+                        h={40}
+                        fit="contain"
                         fallbackSrc="https://placehold.co/40x40"
                       />
                     </Table.Td>
