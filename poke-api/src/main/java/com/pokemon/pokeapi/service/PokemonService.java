@@ -6,7 +6,7 @@ import com.pokemon.pokeapi.dto.external.PokeApiSpeciesDTO;
 import com.pokemon.pokeapi.dto.external.PokeApiEvolutionChainDataDTO;
 import com.pokemon.pokeapi.dto.pokemon.*;
 import com.pokemon.pokeapi.exception.ResourceNotFoundException;
-import com.pokemon.pokeapi.utils.PokeApiMapper;
+import com.pokemon.pokeapi.mapper.PokeApiMapper;
 import com.pokemon.pokeapi.client.PokeApiClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

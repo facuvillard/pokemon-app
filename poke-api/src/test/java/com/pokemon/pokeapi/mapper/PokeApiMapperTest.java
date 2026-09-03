@@ -1,4 +1,4 @@
-package com.pokemon.pokeapi.utils;
+package com.pokemon.pokeapi.mapper;
 
 import com.pokemon.pokeapi.dto.external.PokeApiEvolutionChainDataDTO;
 import com.pokemon.pokeapi.dto.external.PokeApiNamedResourceDTO;

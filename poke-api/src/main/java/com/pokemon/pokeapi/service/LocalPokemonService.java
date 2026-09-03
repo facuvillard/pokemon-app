@@ -7,7 +7,7 @@ import com.pokemon.pokeapi.exception.ResourceNotFoundException;
 import com.pokemon.pokeapi.mapper.PokemonMapper;
 import com.pokemon.pokeapi.model.Pokemon;
 import com.pokemon.pokeapi.repository.PokemonRepository;
-import com.pokemon.pokeapi.utils.PokeApiMapper;
+import com.pokemon.pokeapi.mapper.PokeApiMapper;
 import com.pokemon.pokeapi.client.PokeApiClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

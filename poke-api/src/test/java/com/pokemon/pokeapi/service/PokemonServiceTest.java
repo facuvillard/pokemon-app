@@ -8,7 +8,7 @@ import com.pokemon.pokeapi.dto.external.PokeApiSpeciesDTO;
 import com.pokemon.pokeapi.dto.pokemon.PokemonDetailDTO;
 import com.pokemon.pokeapi.dto.pokemon.PokemonListResponseDTO;
 import com.pokemon.pokeapi.exception.ResourceNotFoundException;
-import com.pokemon.pokeapi.utils.PokeApiMapper;
+import com.pokemon.pokeapi.mapper.PokeApiMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

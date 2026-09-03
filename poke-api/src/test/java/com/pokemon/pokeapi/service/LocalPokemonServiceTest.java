@@ -10,7 +10,7 @@ import com.pokemon.pokeapi.exception.ResourceNotFoundException;
 import com.pokemon.pokeapi.mapper.PokemonMapper;
 import com.pokemon.pokeapi.model.Pokemon;
 import com.pokemon.pokeapi.repository.PokemonRepository;
-import com.pokemon.pokeapi.utils.PokeApiMapper;
+import com.pokemon.pokeapi.mapper.PokeApiMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
