@@ -25,8 +25,8 @@ public class LocalPokemonController {
 
     @PostMapping("/sync/batch")
     @ResponseStatus(HttpStatus.CREATED)
-    public void syncBatch(@Valid @RequestBody SyncBatchRequestDTO request) {
-        localPokemonService.syncPokemonBatch(request.ids());
+    public java.util.List<LocalPokemonDTO> syncBatch(@Valid @RequestBody SyncBatchRequestDTO request) {
+        return localPokemonService.syncPokemonBatch(request.ids());
     }
 
     @GetMapping

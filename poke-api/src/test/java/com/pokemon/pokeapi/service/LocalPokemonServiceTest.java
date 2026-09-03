@@ -4,6 +4,7 @@ import com.pokemon.pokeapi.dto.pokemon.LocalPokemonDTO;
 import com.pokemon.pokeapi.dto.pokemon.UpdatePokemonDTO;
 import com.pokemon.pokeapi.exception.BadRequestException;
 import com.pokemon.pokeapi.exception.ResourceNotFoundException;
+import com.pokemon.pokeapi.mapper.PokemonMapper;
 import com.pokemon.pokeapi.model.Pokemon;
 import com.pokemon.pokeapi.repository.PokemonRepository;
 import org.junit.jupiter.api.Test;
@@ -26,6 +27,9 @@ public class LocalPokemonServiceTest {
     @Mock
     private PokeApiService pokeApiService;
 
+    @Mock
+    private PokemonMapper pokemonMapper;
+
     @InjectMocks
     private LocalPokemonService localPokemonService;
 
@@ -35,6 +39,9 @@ public class LocalPokemonServiceTest {
         when(pokeApiService.getPokemonById(1L)).thenReturn(Map.of("id", 1, "name", "bulbasaur", "weight", 69, "height", 7, "base_experience", 64));
         when(pokeApiService.getPokemonSpecies(1L)).thenReturn(Map.of());
         when(pokemonRepository.save(any(Pokemon.class))).thenAnswer(i -> i.getArguments()[0]);
+        
+        LocalPokemonDTO mockDto = new LocalPokemonDTO(1L, "bulbasaur", null, 0, 0, 0, null, null, null, null, null, null, null, null, null, null);
+        when(pokemonMapper.toLocalPokemonDTO(any(Pokemon.class))).thenReturn(mockDto);
 
         LocalPokemonDTO result = localPokemonService.syncPokemon(1L);
         assertEquals(1L, result.id());
@@ -52,6 +59,10 @@ public class LocalPokemonServiceTest {
         Pokemon p = new Pokemon();
         p.setId(1L);
         when(pokemonRepository.findById(1L)).thenReturn(Optional.of(p));
+        
+        LocalPokemonDTO mockDto = new LocalPokemonDTO(1L, "bulbasaur", null, 0, 0, 0, null, null, null, null, null, null, null, null, null, null);
+        when(pokemonMapper.toLocalPokemonDTO(any(Pokemon.class))).thenReturn(mockDto);
+
         LocalPokemonDTO result = localPokemonService.getLocalPokemonById(1L);
         assertEquals(1L, result.id());
     }
@@ -69,6 +80,9 @@ public class LocalPokemonServiceTest {
         when(pokemonRepository.findById(1L)).thenReturn(Optional.of(p));
         when(pokemonRepository.save(any(Pokemon.class))).thenAnswer(i -> i.getArguments()[0]);
         
+        LocalPokemonDTO mockDto = new LocalPokemonDTO(1L, "bulbasaur", null, 0, 0, 0, null, null, null, null, "Bulby", null, null, null, null, null);
+        when(pokemonMapper.toLocalPokemonDTO(any(Pokemon.class))).thenReturn(mockDto);
+
         LocalPokemonDTO result = localPokemonService.updateLocalPokemon(1L, new UpdatePokemonDTO("Bulby", "Kanto", "Seed", "Cool"));
         assertEquals("Bulby", result.customName());
     }

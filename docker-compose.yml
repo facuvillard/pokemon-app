@@ -1,4 +1,13 @@
 services:
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+
   poke-api:
     build: ./poke-api
     container_name: poke-api
@@ -8,6 +17,9 @@ services:
       - ./data:/app/data
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATA_REDIS_HOST=redis
+    depends_on:
+      - redis
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/api/v1/pokemon?page=0&size=1"]
       interval: 30s
@@ -23,3 +35,6 @@ services:
     depends_on:
       poke-api:
         condition: service_started
+
+volumes:
+  redis-data:

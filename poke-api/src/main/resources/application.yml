@@ -11,9 +11,12 @@ spring:
       hibernate:
         format_sql: true
   cache:
-    type: caffeine
-    caffeine:
-      spec: maximumSize=500,expireAfterWrite=3600s
+    type: redis
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 5000
 
 server:
   port: 8080
@@ -24,3 +27,11 @@ pokeapi:
 jwt:
   secret: a-long-random-secret-key-for-jwt-token-generation-min-256-bits-long-enough
   expiration: 86400000
+
+logging:
+  level:
+    com.pokemon.pokeapi: DEBUG
+    com.pokemon.pokeapi.config.RequestLoggingFilter: INFO
+    org.springframework.web: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

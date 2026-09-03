@@ -9,12 +9,13 @@ pokemon-app/
 ├── poke-api/          # Java Spring Boot Backend
 │   ├── src/
 │   │   ├── main/java/com/pokemon/pokeapi/
-│   │   │   ├── controller/    # REST controllers
+│   │   ├── controller/    # REST controllers
 │   │   │   ├── service/       # Business logic
 │   │   │   ├── dto/           # Java Records (request/response)
+│   │   │   ├── mapper/        # MapStruct mappers
 │   │   │   ├── model/         # JPA entities (Lombok)
 │   │   │   ├── repository/    # Spring Data JPA
-│   │   │   ├── config/        # Configuration
+│   │   │   ├── config/        # Configuration + Request Logging
 │   │   │   ├── security/      # JWT + Spring Security
 │   │   │   ├── exception/     # Error handling
 │   │   │   └── utils/         # Utilities
@@ -41,10 +42,12 @@ pokemon-app/
 | Spring Security + JWT | Authentication |
 | Spring Data JPA | Data access |
 | SQLite | Local relational database |
-| Caffeine Cache | PokeAPI response caching |
+| Redis | PokeAPI response caching |
+| MapStruct | Entity ↔ DTO mapping |
 | Lombok | Boilerplate reduction (entities) |
 | Java Records | DTOs (immutable) |
 | JUnit 5 + Mockito | Testing |
+| Request Logging Filter | HTTP request/response logging |
 
 ### Frontend
 | Technology | Purpose |
@@ -74,10 +77,11 @@ pokemon-app/
 git clone https://github.com/facuvillard/pokemon-app.git
 cd pokemon-app
 
-# Start both services
+# Start all services (Redis + Backend + Frontend)
 docker-compose up --build
 
-# Backend: http://localhost:8080
+# Redis:    localhost:6379
+# Backend:  http://localhost:8080
 # Frontend: http://localhost:3000
 ```
 
@@ -88,6 +92,7 @@ docker-compose up --build
 - Maven 3.9+
 - Node.js 18+
 - npm 9+
+- Redis (running on localhost:6379)
 
 #### Backend
 ```bash
@@ -123,7 +128,7 @@ The application comes pre-seeded with a demo user:
 | Password | `admin123` |
 | Email | `admin@pokemon.com` |
 
-Additionally, the first 20 Pokemon (Bulbasaur to Raticate) are synced to the local database on first startup.
+> **Note:** Users start with **no synced Pokemon**. Browse the Pokédex and use the "Sync" button to add Pokemon to your local collection.
 
 ## 📡 API Endpoints
 
