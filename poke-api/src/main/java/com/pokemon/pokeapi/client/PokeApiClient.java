@@ -1,13 +1,14 @@
 package com.pokemon.pokeapi.client;
 
-import org.springframework.stereotype.Component;
-
+import com.pokemon.pokeapi.dto.external.PokeApiEvolutionChainData;
+import com.pokemon.pokeapi.dto.external.PokeApiListResponse;
+import com.pokemon.pokeapi.dto.external.PokeApiPokemon;
+import com.pokemon.pokeapi.dto.external.PokeApiSpecies;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
-import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
@@ -19,29 +20,25 @@ public class PokeApiClient {
     private String baseUrl;
 
     @Cacheable("pokemonList")
-    @SuppressWarnings("unchecked")
-    public Map<String, Object> getPokemonList(int offset, int limit) {
+    public PokeApiListResponse getPokemonList(int offset, int limit) {
         String url = baseUrl + "/pokemon?offset=" + offset + "&limit=" + limit;
-        return restTemplate.getForObject(url, Map.class);
+        return restTemplate.getForObject(url, PokeApiListResponse.class);
     }
 
     @Cacheable("pokemonDetail")
-    @SuppressWarnings("unchecked")
-    public Map<String, Object> getPokemonById(long id) {
+    public PokeApiPokemon getPokemonById(long id) {
         String url = baseUrl + "/pokemon/" + id;
-        return restTemplate.getForObject(url, Map.class);
+        return restTemplate.getForObject(url, PokeApiPokemon.class);
     }
 
     @Cacheable("pokemonSpecies")
-    @SuppressWarnings("unchecked")
-    public Map<String, Object> getPokemonSpecies(long id) {
+    public PokeApiSpecies getPokemonSpecies(long id) {
         String url = baseUrl + "/pokemon-species/" + id;
-        return restTemplate.getForObject(url, Map.class);
+        return restTemplate.getForObject(url, PokeApiSpecies.class);
     }
 
     @Cacheable("evolutionChain")
-    @SuppressWarnings("unchecked")
-    public Map<String, Object> getEvolutionChain(String url) {
-        return restTemplate.getForObject(url, Map.class);
+    public PokeApiEvolutionChainData getEvolutionChain(String url) {
+        return restTemplate.getForObject(url, PokeApiEvolutionChainData.class);
     }
 }

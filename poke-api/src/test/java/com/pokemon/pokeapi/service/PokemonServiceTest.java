@@ -1,7 +1,10 @@
 package com.pokemon.pokeapi.service;
 
 import com.pokemon.pokeapi.client.PokeApiClient;
-
+import com.pokemon.pokeapi.dto.external.PokeApiListResponse;
+import com.pokemon.pokeapi.dto.external.PokeApiNamedResource;
+import com.pokemon.pokeapi.dto.external.PokeApiPokemon;
+import com.pokemon.pokeapi.dto.external.PokeApiSpecies;
 import com.pokemon.pokeapi.dto.pokemon.PokemonDetailDTO;
 import com.pokemon.pokeapi.dto.pokemon.PokemonListResponseDTO;
 import com.pokemon.pokeapi.exception.ResourceNotFoundException;
@@ -11,10 +14,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
-import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -28,11 +30,10 @@ public class PokemonServiceTest {
 
     @Test
     void testListPokemon_ReturnsPagedResponse() {
-        Map<String, Object> listResp = Map.of(
-            "count", 1,
-            "results", List.of(Map.of("url", "https://pokeapi.co/api/v2/pokemon/1/"))
+        PokeApiListResponse listResp = new PokeApiListResponse(
+            1, null, null, List.of(new PokeApiNamedResource("bulbasaur", "https://pokeapi.co/api/v2/pokemon/1/"))
         );
-        Map<String, Object> detail = Map.of("id", 1, "name", "bulbasaur", "weight", 69);
+        PokeApiPokemon detail = new PokeApiPokemon(1L, "bulbasaur", 69, null, null, null, null, null, null);
 
         when(pokeApiClient.getPokemonList(anyInt(), anyInt())).thenReturn(listResp);
         when(pokeApiClient.getPokemonById(1L)).thenReturn(detail);
@@ -46,9 +47,10 @@ public class PokemonServiceTest {
 
     @Test
     void testGetPokemonDetail_ReturnsCombinedData() {
-        Map<String, Object> data = Map.of("id", 1, "name", "bulbasaur", "weight", 69, "height", 7);
-        Map<String, Object> species = Map.of(
-            "flavor_text_entries", List.of(Map.of("language", Map.of("name", "en"), "flavor_text", "A strange seed was planted."))
+        PokeApiPokemon data = new PokeApiPokemon(1L, "bulbasaur", 69, 7, null, null, null, null, null);
+        PokeApiSpecies species = new PokeApiSpecies(
+            List.of(new PokeApiSpecies.PokeApiFlavorText("A strange seed was planted.", new PokeApiNamedResource("en", null))),
+            null
         );
 
         when(pokeApiClient.getPokemonById(1L)).thenReturn(data);

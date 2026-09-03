@@ -1,7 +1,8 @@
 package com.pokemon.pokeapi.service;
 
 import com.pokemon.pokeapi.client.PokeApiClient;
-
+import com.pokemon.pokeapi.dto.external.PokeApiPokemon;
+import com.pokemon.pokeapi.dto.external.PokeApiSpecies;
 import com.pokemon.pokeapi.dto.pokemon.LocalPokemonDTO;
 import com.pokemon.pokeapi.dto.pokemon.UpdatePokemonDTO;
 import com.pokemon.pokeapi.exception.BadRequestException;
@@ -14,8 +15,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import java.util.Map;
+
 import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -38,8 +40,8 @@ public class LocalPokemonServiceTest {
     @Test
     void testSyncPokemon_Success() {
         when(pokemonRepository.existsById(1L)).thenReturn(false);
-        when(pokeApiClient.getPokemonById(1L)).thenReturn(Map.of("id", 1, "name", "bulbasaur", "weight", 69, "height", 7, "base_experience", 64));
-        when(pokeApiClient.getPokemonSpecies(1L)).thenReturn(Map.of());
+        when(pokeApiClient.getPokemonById(1L)).thenReturn(new PokeApiPokemon(1L, "bulbasaur", 69, 7, 64, null, null, null, null));
+        when(pokeApiClient.getPokemonSpecies(1L)).thenReturn(new PokeApiSpecies(null, null));
         when(pokemonRepository.save(any(Pokemon.class))).thenAnswer(i -> i.getArguments()[0]);
         
         LocalPokemonDTO mockDto = new LocalPokemonDTO(1L, "bulbasaur", null, 0, 0, 0, null, null, null, null, null, null, null, null, null, null);

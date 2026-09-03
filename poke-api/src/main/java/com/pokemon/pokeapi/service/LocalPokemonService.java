@@ -32,8 +32,8 @@ public class LocalPokemonService {
         }
 
         try {
-            Map<String, Object> data = pokeApiClient.getPokemonById(id);
-            Map<String, Object> species = pokeApiClient.getPokemonSpecies(id);
+            var data = pokeApiClient.getPokemonById(id);
+            var species = pokeApiClient.getPokemonSpecies(id);
             String description = PokeApiMapper.extractEnglishDescription(species);
 
             Pokemon entity = PokeApiMapper.mapToPokemonEntity(data, description);
