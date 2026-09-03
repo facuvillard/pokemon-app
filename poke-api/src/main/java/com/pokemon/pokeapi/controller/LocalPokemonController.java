@@ -32,16 +32,20 @@ public class LocalPokemonController {
     @GetMapping
     public Page<LocalPokemonDTO> listLocalPokemon(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        return localPokemonService.getAllLocalPokemon(page, size);
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir) {
+        return localPokemonService.getAllLocalPokemon(page, size, sortBy, sortDir);
     }
 
     @GetMapping("/search")
     public Page<LocalPokemonDTO> searchLocalPokemon(
             @RequestParam String query,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        return localPokemonService.searchLocalPokemon(query, page, size);
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir) {
+        return localPokemonService.searchLocalPokemon(query, page, size, sortBy, sortDir);
     }
 
     @GetMapping("/{id}")

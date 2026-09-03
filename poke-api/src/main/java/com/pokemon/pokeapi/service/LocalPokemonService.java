@@ -62,13 +62,15 @@ public class LocalPokemonService {
                 .toList();
     }
 
-    public Page<LocalPokemonDTO> getAllLocalPokemon(int page, int size) {
-        return pokemonRepository.findAll(PageRequest.of(page, size))
+    public Page<LocalPokemonDTO> getAllLocalPokemon(int page, int size, String sortBy, String sortDir) {
+        org.springframework.data.domain.Sort sort = org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.fromString(sortDir), sortBy);
+        return pokemonRepository.findAll(org.springframework.data.domain.PageRequest.of(page, size, sort))
                 .map(pokemonMapper::toLocalPokemonDTO);
     }
 
-    public Page<LocalPokemonDTO> searchLocalPokemon(String query, int page, int size) {
-        return pokemonRepository.findByNameContainingIgnoreCase(query, PageRequest.of(page, size))
+    public Page<LocalPokemonDTO> searchLocalPokemon(String query, int page, int size, String sortBy, String sortDir) {
+        org.springframework.data.domain.Sort sort = org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.fromString(sortDir), sortBy);
+        return pokemonRepository.findByNameContainingIgnoreCase(query, org.springframework.data.domain.PageRequest.of(page, size, sort))
                 .map(pokemonMapper::toLocalPokemonDTO);
     }
 

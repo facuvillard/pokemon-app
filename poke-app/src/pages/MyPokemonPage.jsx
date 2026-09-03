@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Title, Table, Image, Button, Group, Center, Loader, Text, Pagination, ActionIcon, Container, Badge, TextInput, Tooltip } from '@mantine/core';
-import { IconEdit, IconTrash, IconSearch } from '@tabler/icons-react';
+import { Title, Table, Image, Button, Group, Center, Loader, Text, Pagination, ActionIcon, Container, Badge, TextInput, Tooltip, UnstyledButton } from '@mantine/core';
+import { IconEdit, IconTrash, IconSearch, IconChevronUp, IconChevronDown, IconSelector } from '@tabler/icons-react';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
 import { Link, useNavigate } from 'react-router-dom';
@@ -16,6 +16,8 @@ export default function MyPokemonPage() {
 
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [sortCol, setSortCol] = useState('id');
+  const [sortDir, setSortDir] = useState('asc');
 
   const [editingPokemon, setEditingPokemon] = useState(null);
 
@@ -28,12 +30,12 @@ export default function MyPokemonPage() {
     return () => clearTimeout(handler);
   }, [search]);
 
-  const fetchLocalPokemon = async (pageNumber, query) => {
+  const fetchLocalPokemon = async (pageNumber, query, sortBy, sortDirection) => {
     setLoading(true);
     try {
       const res = query
-        ? await pokemonService.searchLocalPokemon(query, pageNumber - 1, 20)
-        : await pokemonService.getLocalPokemon(pageNumber - 1, 20);
+        ? await pokemonService.searchLocalPokemon(query, pageNumber - 1, 20, sortBy, sortDirection)
+        : await pokemonService.getLocalPokemon(pageNumber - 1, 20, sortBy, sortDirection);
       setPokemon(res.data.content);
       setTotalPages(res.data.totalPages);
     } catch (error) {
@@ -49,8 +51,8 @@ export default function MyPokemonPage() {
   };
 
   useEffect(() => {
-    fetchLocalPokemon(page, debouncedSearch);
-  }, [page, debouncedSearch]);
+    fetchLocalPokemon(page, debouncedSearch, sortCol, sortDir);
+  }, [page, debouncedSearch, sortCol, sortDir]);
 
   const handleDelete = (id, name) => {
     modals.openConfirmModal({
@@ -71,7 +73,7 @@ export default function MyPokemonPage() {
             message: `${name} has been removed.`,
             color: 'green'
           });
-          fetchLocalPokemon(page, debouncedSearch);
+          fetchLocalPokemon(page, debouncedSearch, sortCol, sortDir);
         } catch (error) {
           notifications.show({
             title: 'Error',
@@ -81,6 +83,29 @@ export default function MyPokemonPage() {
         }
       },
     });
+  };
+
+
+  const handleSort = (column) => {
+    if (sortCol === column) {
+      setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortCol(column);
+      setSortDir('asc');
+    }
+  };
+
+  const SortableTh = ({ children, column, currentSort, currentDir, onSort }) => {
+    const isSorted = currentSort === column;
+    const Icon = isSorted ? (currentDir === 'asc' ? IconChevronUp : IconChevronDown) : IconSelector;
+    return (
+      <Table.Th>
+        <UnstyledButton onClick={() => onSort(column)} style={{ display: 'flex', alignItems: 'center', fontWeight: 700 }}>
+          {children}
+          <Icon size={14} style={{ marginLeft: 5, color: isSorted ? 'var(--mantine-color-pokeRed-6)' : 'gray' }} />
+        </UnstyledButton>
+      </Table.Th>
+    );
   };
 
   if (loading && pokemon.length === 0) {
@@ -118,13 +143,13 @@ export default function MyPokemonPage() {
             <Table striped highlightOnHover withTableBorder>
               <Table.Thead>
                 <Table.Tr>
-                  <Table.Th>ID</Table.Th>
+                  <SortableTh column="id" currentSort={sortCol} currentDir={sortDir} onSort={handleSort}>ID</SortableTh>
                   <Table.Th>Sprite</Table.Th>
-                  <Table.Th>Name</Table.Th>
-                  <Table.Th>Custom Name</Table.Th>
-                  <Table.Th>Region</Table.Th>
-                  <Table.Th>Tag</Table.Th>
-                  <Table.Th>Description</Table.Th>
+                  <SortableTh column="name" currentSort={sortCol} currentDir={sortDir} onSort={handleSort}>Name</SortableTh>
+                  <SortableTh column="customName" currentSort={sortCol} currentDir={sortDir} onSort={handleSort}>Custom Name</SortableTh>
+                  <SortableTh column="region" currentSort={sortCol} currentDir={sortDir} onSort={handleSort}>Region</SortableTh>
+                  <SortableTh column="classificationTag" currentSort={sortCol} currentDir={sortDir} onSort={handleSort}>Tag</SortableTh>
+                  <SortableTh column="notes" currentSort={sortCol} currentDir={sortDir} onSort={handleSort}>Notes</SortableTh>
                   <Table.Th>Actions</Table.Th>
                 </Table.Tr>
               </Table.Thead>
@@ -148,8 +173,8 @@ export default function MyPokemonPage() {
                       {p.classificationTag ? <Badge>{p.classificationTag}</Badge> : '-'}
                     </Table.Td>
                     <Table.Td>
-                      <Tooltip label={p.description || 'No description'} multiline w={300} withArrow>
-                        <Text truncate w={150}>{p.description || '-'}</Text>
+                      <Tooltip label={p.notes || 'No notes'} multiline w={300} withArrow>
+                        <Text truncate w={150}>{p.notes || '-'}</Text>
                       </Tooltip>
                     </Table.Td>
                     <Table.Td>
