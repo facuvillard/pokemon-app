@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Title, TextInput, Grid, Pagination, Loader, Center, Container } from '@mantine/core';
+import { Title, TextInput, Grid, Pagination, Loader, Center, Container, Select, Group } from '@mantine/core';
 import { IconSearch } from '@tabler/icons-react';
 import { pokemonService } from '../services/pokemonService';
 import PokemonCard from '../components/Pokemon/PokemonCard';
@@ -11,6 +11,7 @@ export default function HomePage() {
   const [totalPages, setTotalPages] = useState(0);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [pageSize, setPageSize] = useState('20');
 
   // Debounce search input
   useEffect(() => {
@@ -21,12 +22,12 @@ export default function HomePage() {
     return () => clearTimeout(handler);
   }, [search]);
 
-  const fetchPokemon = async (pageNumber, query) => {
+  const fetchPokemon = async (pageNumber, query, size) => {
     setLoading(true);
     try {
       const res = query 
-        ? await pokemonService.searchPokemon(query, pageNumber - 1, 20)
-        : await pokemonService.listPokemon(pageNumber - 1, 20);
+        ? await pokemonService.searchPokemon(query, pageNumber - 1, parseInt(size))
+        : await pokemonService.listPokemon(pageNumber - 1, parseInt(size));
       setPokemon(res.data.content);
       setTotalPages(res.data.totalPages);
     } catch (error) {
@@ -37,22 +38,36 @@ export default function HomePage() {
   };
 
   useEffect(() => {
-    fetchPokemon(page, debouncedSearch);
-  }, [page, debouncedSearch]);
+    fetchPokemon(page, debouncedSearch, pageSize);
+  }, [page, debouncedSearch, pageSize]);
 
   return (
     <Container size="xl">
       <Title order={1} mb="lg" ta="center">Pokédex</Title>
       
-      <TextInput
-        placeholder="Search Pokémon..."
-        leftSection={<IconSearch size={16} />}
-        value={search}
-        onChange={(e) => setSearch(e.currentTarget.value)}
-        mb="xl"
-        size="md"
-        radius="md"
-      />
+      <Group justify="space-between" mb="xl">
+        <TextInput
+          placeholder="Search Pokémon..."
+          leftSection={<IconSearch size={16} />}
+          value={search}
+          onChange={(e) => setSearch(e.currentTarget.value)}
+          size="md"
+          radius="md"
+          style={{ flex: 1 }}
+        />
+        <Select
+          value={pageSize}
+          onChange={(val) => { setPageSize(val); setPage(1); }}
+          data={[
+            { value: '20', label: '20 per page' },
+            { value: '50', label: '50 per page' },
+            { value: '100', label: '100 per page' }
+          ]}
+          size="md"
+          radius="md"
+          w={150}
+        />
+      </Group>
 
       {loading ? (
         <Center h={400}>
