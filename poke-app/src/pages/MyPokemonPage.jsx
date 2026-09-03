@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Title, Table, Image, Button, Group, Center, Loader, Text, Pagination, ActionIcon, Container, Badge } from '@mantine/core';
-import { IconEdit, IconTrash } from '@tabler/icons-react';
+import { Title, Table, Image, Button, Group, Center, Loader, Text, Pagination, ActionIcon, Container, Badge, TextInput } from '@mantine/core';
+import { IconEdit, IconTrash, IconSearch } from '@tabler/icons-react';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
 import { Link } from 'react-router-dom';
@@ -13,12 +13,26 @@ export default function MyPokemonPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
 
+  const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+
   const [editingPokemon, setEditingPokemon] = useState(null);
 
-  const fetchLocalPokemon = async (pageNumber) => {
+  // Debounce search input
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(1); // Reset page on new search
+    }, 500);
+    return () => clearTimeout(handler);
+  }, [search]);
+
+  const fetchLocalPokemon = async (pageNumber, query) => {
     setLoading(true);
     try {
-      const res = await pokemonService.getLocalPokemon(pageNumber - 1, 20);
+      const res = query
+        ? await pokemonService.searchLocalPokemon(query, pageNumber - 1, 20)
+        : await pokemonService.getLocalPokemon(pageNumber - 1, 20);
       setPokemon(res.data.content);
       setTotalPages(res.data.totalPages);
     } catch (error) {
@@ -34,8 +48,8 @@ export default function MyPokemonPage() {
   };
 
   useEffect(() => {
-    fetchLocalPokemon(page);
-  }, [page]);
+    fetchLocalPokemon(page, debouncedSearch);
+  }, [page, debouncedSearch]);
 
   const handleDelete = (id, name) => {
     modals.openConfirmModal({
@@ -56,7 +70,7 @@ export default function MyPokemonPage() {
             message: `${name} has been removed.`,
             color: 'green'
           });
-          fetchLocalPokemon(page);
+          fetchLocalPokemon(page, debouncedSearch);
         } catch (error) {
           notifications.show({
             title: 'Error',
@@ -76,10 +90,26 @@ export default function MyPokemonPage() {
     <Container size="xl">
       <Title order={1} mb="xl">My Pokémon Collection</Title>
 
+      <TextInput
+        placeholder="Search my collection..."
+        leftSection={<IconSearch size={16} />}
+        value={search}
+        onChange={(e) => setSearch(e.currentTarget.value)}
+        mb="xl"
+        size="md"
+        radius="md"
+      />
+
       {pokemon.length === 0 ? (
         <Center h={200} style={{ flexDirection: 'column' }}>
-          <Text size="lg" mb="md">No Pokémon synced yet. Browse the Pokédex to add some!</Text>
-          <Button component={Link} to="/">Go to Pokédex</Button>
+          {debouncedSearch ? (
+            <Text size="lg" mb="md">No Pokémon found matching "{debouncedSearch}".</Text>
+          ) : (
+            <>
+              <Text size="lg" mb="md">No Pokémon synced yet. Browse the Pokédex to add some!</Text>
+              <Button component={Link} to="/">Go to Pokédex</Button>
+            </>
+          )}
         </Center>
       ) : (
         <>
@@ -143,7 +173,7 @@ export default function MyPokemonPage() {
         opened={!!editingPokemon}
         onClose={() => setEditingPokemon(null)}
         pokemon={editingPokemon}
-        onSuccess={() => fetchLocalPokemon(page)}
+        onSuccess={() => fetchLocalPokemon(page, debouncedSearch)}
       />
     </Container>
   );

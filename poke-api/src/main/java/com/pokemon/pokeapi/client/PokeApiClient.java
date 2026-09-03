@@ -25,6 +25,12 @@ public class PokeApiClient {
         return restTemplate.getForObject(url, PokeApiListResponseDTO.class);
     }
 
+    @Cacheable("allPokemonNames")
+    public PokeApiListResponseDTO getAllPokemonNames() {
+        String url = baseUrl + "/pokemon?limit=10000";
+        return restTemplate.getForObject(url, PokeApiListResponseDTO.class);
+    }
+
     @Cacheable("pokemonDetail")
     public PokeApiPokemonDTO getPokemonById(long id) {
         String url = baseUrl + "/pokemon/" + id;

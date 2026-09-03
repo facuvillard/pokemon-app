@@ -51,6 +51,40 @@ public class PokemonService {
         return new PokemonListResponseDTO(content, page, size, totalElements, totalPages);
     }
 
+    public PokemonListResponseDTO searchPokemon(String query, int page, int size) {
+        PokeApiListResponseDTO all = pokeApiClient.getAllPokemonNames();
+        if (all == null || all.results() == null) {
+            return new PokemonListResponseDTO(List.of(), page, size, 0, 0);
+        }
+
+        List<com.pokemon.pokeapi.dto.external.PokeApiNamedResourceDTO> filtered = all.results().stream()
+                .filter(r -> r.name() != null && r.name().toLowerCase().contains(query.toLowerCase()))
+                .toList();
+
+        long totalElements = filtered.size();
+        int totalPages = (int) Math.ceil((double) totalElements / size);
+
+        int start = page * size;
+        int end = Math.min(start + size, filtered.size());
+
+        List<PokemonListItemDTO> content = new ArrayList<>();
+        if (start < filtered.size()) {
+            for (var item : filtered.subList(start, end)) {
+                Long id = item.extractId();
+                if (id != null) {
+                    try {
+                        PokeApiPokemonDTO detail = pokeApiClient.getPokemonById(id);
+                        content.add(mapToListItemDTO(detail));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+
+        return new PokemonListResponseDTO(content, page, size, totalElements, totalPages);
+    }
+
     public PokemonDetailDTO getPokemonDetail(long id) {
         try {
             PokeApiPokemonDTO data = pokeApiClient.getPokemonById(id);

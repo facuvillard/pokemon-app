@@ -67,6 +67,11 @@ public class LocalPokemonService {
                 .map(pokemonMapper::toLocalPokemonDTO);
     }
 
+    public Page<LocalPokemonDTO> searchLocalPokemon(String query, int page, int size) {
+        return pokemonRepository.findByNameContainingIgnoreCase(query, PageRequest.of(page, size))
+                .map(pokemonMapper::toLocalPokemonDTO);
+    }
+
     public LocalPokemonDTO getLocalPokemonById(long id) {
         Pokemon entity = pokemonRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Pokemon not found with id: " + id));

@@ -10,12 +10,23 @@ export default function HomePage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
 
-  const fetchPokemon = async (pageNumber) => {
+  // Debounce search input
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(1); // Reset page on new search
+    }, 500);
+    return () => clearTimeout(handler);
+  }, [search]);
+
+  const fetchPokemon = async (pageNumber, query) => {
     setLoading(true);
     try {
-      // API expects 0-indexed page
-      const res = await pokemonService.listPokemon(pageNumber - 1, 20);
+      const res = query 
+        ? await pokemonService.searchPokemon(query, pageNumber - 1, 20)
+        : await pokemonService.listPokemon(pageNumber - 1, 20);
       setPokemon(res.data.content);
       setTotalPages(res.data.totalPages);
     } catch (error) {
@@ -26,10 +37,8 @@ export default function HomePage() {
   };
 
   useEffect(() => {
-    fetchPokemon(page);
-  }, [page]);
-
-  const filteredPokemon = pokemon.filter(p => p.name.toLowerCase().includes(search.toLowerCase()));
+    fetchPokemon(page, debouncedSearch);
+  }, [page, debouncedSearch]);
 
   return (
     <Container size="xl">
@@ -51,17 +60,25 @@ export default function HomePage() {
         </Center>
       ) : (
         <>
-          <Grid>
-            {filteredPokemon.map((p) => (
-              <Grid.Col key={p.id} span={{ base: 12, xs: 12, sm: 6, md: 4, lg: 3 }}>
-                <PokemonCard pokemon={p} />
-              </Grid.Col>
-            ))}
-          </Grid>
-          
-          <Center mt="xl">
-            <Pagination total={totalPages} value={page} onChange={setPage} color="pokeRed" />
-          </Center>
+          {pokemon.length === 0 ? (
+            <Center h={200}>
+              <Title order={3} c="dimmed">No Pokémon found.</Title>
+            </Center>
+          ) : (
+            <Grid>
+              {pokemon.map(p => (
+                <Grid.Col key={p.id} span={{ base: 12, sm: 6, md: 4, lg: 3 }}>
+                  <PokemonCard pokemon={p} />
+                </Grid.Col>
+              ))}
+            </Grid>
+          )}
+
+          {totalPages > 1 && (
+            <Center mt="xl">
+              <Pagination total={totalPages} value={page} onChange={setPage} />
+            </Center>
+          )}
         </>
       )}
     </Container>

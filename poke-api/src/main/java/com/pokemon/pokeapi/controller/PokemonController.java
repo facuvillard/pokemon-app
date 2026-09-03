@@ -20,6 +20,14 @@ public class PokemonController {
         return pokemonService.listPokemon(page, size);
     }
 
+    @GetMapping("/search")
+    public PokemonListResponseDTO searchPokemon(
+            @RequestParam String query,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return pokemonService.searchPokemon(query, page, size);
+    }
+
     @GetMapping("/{id}")
     public PokemonDetailDTO getPokemonDetail(@PathVariable long id) {
         return pokemonService.getPokemonDetail(id);

@@ -36,6 +36,14 @@ public class LocalPokemonController {
         return localPokemonService.getAllLocalPokemon(page, size);
     }
 
+    @GetMapping("/search")
+    public Page<LocalPokemonDTO> searchLocalPokemon(
+            @RequestParam String query,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return localPokemonService.searchLocalPokemon(query, page, size);
+    }
+
     @GetMapping("/{id}")
     public LocalPokemonDTO getLocalPokemonById(@PathVariable long id) {
         return localPokemonService.getLocalPokemonById(id);
