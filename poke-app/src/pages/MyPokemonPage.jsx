@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
-import { Title, Table, Image, Button, Group, Center, Loader, Text, Pagination, ActionIcon, Container, Badge, TextInput } from '@mantine/core';
+import { Title, Table, Image, Button, Group, Center, Loader, Text, Pagination, ActionIcon, Container, Badge, TextInput, Tooltip } from '@mantine/core';
 import { IconEdit, IconTrash, IconSearch } from '@tabler/icons-react';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { pokemonService } from '../services/pokemonService';
 import EditPokemonModal from '../components/Pokemon/EditPokemonModal';
 
 export default function MyPokemonPage() {
+  const navigate = useNavigate();
   const [pokemon, setPokemon] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -123,12 +124,13 @@ export default function MyPokemonPage() {
                   <Table.Th>Custom Name</Table.Th>
                   <Table.Th>Region</Table.Th>
                   <Table.Th>Tag</Table.Th>
+                  <Table.Th>Description</Table.Th>
                   <Table.Th>Actions</Table.Th>
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
                 {pokemon.map((p) => (
-                  <Table.Tr key={p.id}>
+                  <Table.Tr key={p.id} onClick={() => navigate(`/pokemon/${p.id}`)} style={{ cursor: 'pointer' }}>
                     <Table.Td>#{String(p.id).padStart(3, '0')}</Table.Td>
                     <Table.Td>
                       <Image
@@ -146,11 +148,16 @@ export default function MyPokemonPage() {
                       {p.classificationTag ? <Badge>{p.classificationTag}</Badge> : '-'}
                     </Table.Td>
                     <Table.Td>
+                      <Tooltip label={p.description || 'No description'} multiline w={300} withArrow>
+                        <Text truncate w={150}>{p.description || '-'}</Text>
+                      </Tooltip>
+                    </Table.Td>
+                    <Table.Td>
                       <Group gap="sm">
-                        <ActionIcon variant="light" color="blue" onClick={() => setEditingPokemon(p)}>
+                        <ActionIcon variant="light" color="blue" onClick={(e) => { e.stopPropagation(); setEditingPokemon(p); }}>
                           <IconEdit size={16} />
                         </ActionIcon>
-                        <ActionIcon variant="light" color="red" onClick={() => handleDelete(p.id, p.name)}>
+                        <ActionIcon variant="light" color="red" onClick={(e) => { e.stopPropagation(); handleDelete(p.id, p.name); }}>
                           <IconTrash size={16} />
                         </ActionIcon>
                       </Group>
