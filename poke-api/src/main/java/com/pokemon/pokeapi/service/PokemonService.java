@@ -3,6 +3,7 @@ package com.pokemon.pokeapi.service;
 import com.pokemon.pokeapi.dto.pokemon.*;
 import com.pokemon.pokeapi.exception.ResourceNotFoundException;
 import com.pokemon.pokeapi.utils.PokeApiMapper;
+import com.pokemon.pokeapi.client.PokeApiClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,11 +15,11 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class PokemonService {
 
-    private final PokeApiService pokeApiService;
+    private final PokeApiClient pokeApiClient;
 
     public PokemonListResponseDTO listPokemon(int page, int size) {
         int offset = page * size;
-        Map<String, Object> response = pokeApiService.getPokemonList(offset, size);
+        Map<String, Object> response = pokeApiClient.getPokemonList(offset, size);
         if (response == null) {
             return new PokemonListResponseDTO(List.of(), page, size, 0, 0);
         }
@@ -35,7 +36,7 @@ public class PokemonService {
                 String url = (String) item.get("url");
                 Long id = PokeApiMapper.extractIdFromUrl(url);
                 try {
-                    Map<String, Object> detail = pokeApiService.getPokemonById(id);
+                    Map<String, Object> detail = pokeApiClient.getPokemonById(id);
                     content.add(mapToListItemDTO(detail));
                 } catch (Exception e) {
                     // Skip if detail fails
@@ -48,8 +49,8 @@ public class PokemonService {
 
     public PokemonDetailDTO getPokemonDetail(long id) {
         try {
-            Map<String, Object> data = pokeApiService.getPokemonById(id);
-            Map<String, Object> species = pokeApiService.getPokemonSpecies(id);
+            Map<String, Object> data = pokeApiClient.getPokemonById(id);
+            Map<String, Object> species = pokeApiClient.getPokemonSpecies(id);
             
             String description = PokeApiMapper.extractEnglishDescription(species);
             
@@ -58,7 +59,7 @@ public class PokemonService {
                 Map<String, Object> ec = (Map<String, Object>) species.get("evolution_chain");
                 if (ec != null && ec.containsKey("url")) {
                     String url = (String) ec.get("url");
-                    Map<String, Object> chainData = pokeApiService.getEvolutionChain(url);
+                    Map<String, Object> chainData = pokeApiClient.getEvolutionChain(url);
                     evolutionChain = PokeApiMapper.parseEvolutionChain(chainData);
                 }
             }

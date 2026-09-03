@@ -8,6 +8,7 @@ import com.pokemon.pokeapi.mapper.PokemonMapper;
 import com.pokemon.pokeapi.model.Pokemon;
 import com.pokemon.pokeapi.repository.PokemonRepository;
 import com.pokemon.pokeapi.utils.PokeApiMapper;
+import com.pokemon.pokeapi.client.PokeApiClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,7 +23,7 @@ import java.util.Map;
 public class LocalPokemonService {
 
     private final PokemonRepository pokemonRepository;
-    private final PokeApiService pokeApiService;
+    private final PokeApiClient pokeApiClient;
     private final PokemonMapper pokemonMapper;
 
     public LocalPokemonDTO syncPokemon(long id) {
@@ -31,8 +32,8 @@ public class LocalPokemonService {
         }
 
         try {
-            Map<String, Object> data = pokeApiService.getPokemonById(id);
-            Map<String, Object> species = pokeApiService.getPokemonSpecies(id);
+            Map<String, Object> data = pokeApiClient.getPokemonById(id);
+            Map<String, Object> species = pokeApiClient.getPokemonSpecies(id);
             String description = PokeApiMapper.extractEnglishDescription(species);
 
             Pokemon entity = PokeApiMapper.mapToPokemonEntity(data, description);

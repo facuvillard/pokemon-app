@@ -1,5 +1,7 @@
 package com.pokemon.pokeapi.service;
 
+import com.pokemon.pokeapi.client.PokeApiClient;
+
 import com.pokemon.pokeapi.dto.pokemon.PokemonDetailDTO;
 import com.pokemon.pokeapi.dto.pokemon.PokemonListResponseDTO;
 import com.pokemon.pokeapi.exception.ResourceNotFoundException;
@@ -19,7 +21,7 @@ import static org.mockito.Mockito.when;
 public class PokemonServiceTest {
 
     @Mock
-    private PokeApiService pokeApiService;
+    private PokeApiClient pokeApiClient;
 
     @InjectMocks
     private PokemonService pokemonService;
@@ -32,8 +34,8 @@ public class PokemonServiceTest {
         );
         Map<String, Object> detail = Map.of("id", 1, "name", "bulbasaur", "weight", 69);
 
-        when(pokeApiService.getPokemonList(anyInt(), anyInt())).thenReturn(listResp);
-        when(pokeApiService.getPokemonById(1L)).thenReturn(detail);
+        when(pokeApiClient.getPokemonList(anyInt(), anyInt())).thenReturn(listResp);
+        when(pokeApiClient.getPokemonById(1L)).thenReturn(detail);
 
         PokemonListResponseDTO result = pokemonService.listPokemon(0, 20);
 
@@ -49,8 +51,8 @@ public class PokemonServiceTest {
             "flavor_text_entries", List.of(Map.of("language", Map.of("name", "en"), "flavor_text", "A strange seed was planted."))
         );
 
-        when(pokeApiService.getPokemonById(1L)).thenReturn(data);
-        when(pokeApiService.getPokemonSpecies(1L)).thenReturn(species);
+        when(pokeApiClient.getPokemonById(1L)).thenReturn(data);
+        when(pokeApiClient.getPokemonSpecies(1L)).thenReturn(species);
 
         PokemonDetailDTO result = pokemonService.getPokemonDetail(1L);
 
@@ -61,7 +63,7 @@ public class PokemonServiceTest {
 
     @Test
     void testGetPokemonDetail_WhenNotFound_ThrowsException() {
-        when(pokeApiService.getPokemonById(999L)).thenThrow(new RuntimeException());
+        when(pokeApiClient.getPokemonById(999L)).thenThrow(new RuntimeException());
         assertThrows(ResourceNotFoundException.class, () -> pokemonService.getPokemonDetail(999L));
     }
 }

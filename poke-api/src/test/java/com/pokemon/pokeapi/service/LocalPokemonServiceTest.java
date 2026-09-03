@@ -1,5 +1,7 @@
 package com.pokemon.pokeapi.service;
 
+import com.pokemon.pokeapi.client.PokeApiClient;
+
 import com.pokemon.pokeapi.dto.pokemon.LocalPokemonDTO;
 import com.pokemon.pokeapi.dto.pokemon.UpdatePokemonDTO;
 import com.pokemon.pokeapi.exception.BadRequestException;
@@ -25,7 +27,7 @@ public class LocalPokemonServiceTest {
     private PokemonRepository pokemonRepository;
 
     @Mock
-    private PokeApiService pokeApiService;
+    private PokeApiClient pokeApiClient;
 
     @Mock
     private PokemonMapper pokemonMapper;
@@ -36,8 +38,8 @@ public class LocalPokemonServiceTest {
     @Test
     void testSyncPokemon_Success() {
         when(pokemonRepository.existsById(1L)).thenReturn(false);
-        when(pokeApiService.getPokemonById(1L)).thenReturn(Map.of("id", 1, "name", "bulbasaur", "weight", 69, "height", 7, "base_experience", 64));
-        when(pokeApiService.getPokemonSpecies(1L)).thenReturn(Map.of());
+        when(pokeApiClient.getPokemonById(1L)).thenReturn(Map.of("id", 1, "name", "bulbasaur", "weight", 69, "height", 7, "base_experience", 64));
+        when(pokeApiClient.getPokemonSpecies(1L)).thenReturn(Map.of());
         when(pokemonRepository.save(any(Pokemon.class))).thenAnswer(i -> i.getArguments()[0]);
         
         LocalPokemonDTO mockDto = new LocalPokemonDTO(1L, "bulbasaur", null, 0, 0, 0, null, null, null, null, null, null, null, null, null, null);

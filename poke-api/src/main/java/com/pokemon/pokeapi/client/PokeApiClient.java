@@ -1,4 +1,6 @@
-package com.pokemon.pokeapi.service;
+package com.pokemon.pokeapi.client;
+
+import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -7,9 +9,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import java.util.Map;
 
-@Service
+@Component
 @RequiredArgsConstructor
-public class PokeApiService {
+public class PokeApiClient {
 
     private final RestTemplate restTemplate;
 
