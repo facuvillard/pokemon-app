@@ -43,7 +43,6 @@ public class PokemonServiceTest {
         PokeApiPokemonDTO detail = new PokeApiPokemonDTO(1L, "bulbasaur", 69, null, null, null, null, null, null);
 
         when(pokeApiClient.getPokemonList(anyInt(), anyInt())).thenReturn(listResp);
-        when(pokeApiMapper.extractIdFromUrl(anyString())).thenReturn(1L);
         when(pokeApiClient.getPokemonById(1L)).thenReturn(detail);
 
         PokemonListResponseDTO result = pokemonService.listPokemon(0, 20);
@@ -63,7 +62,6 @@ public class PokemonServiceTest {
 
         when(pokeApiClient.getPokemonById(1L)).thenReturn(data);
         when(pokeApiClient.getPokemonSpecies(1L)).thenReturn(species);
-        when(pokeApiMapper.extractEnglishDescription(species)).thenReturn("A strange seed was planted.");
 
         PokemonDetailDTO result = pokemonService.getPokemonDetail(1L);
 

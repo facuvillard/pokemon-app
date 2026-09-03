@@ -49,9 +49,8 @@ public class LocalPokemonServiceTest {
         PokeApiSpeciesDTO species = new PokeApiSpeciesDTO(null, null);
         when(pokeApiClient.getPokemonSpecies(1L)).thenReturn(species);
         
-        when(pokeApiMapper.extractEnglishDescription(species)).thenReturn("description");
         Pokemon entity = Pokemon.builder().id(1L).name("bulbasaur").build();
-        when(pokeApiMapper.toEntity(data, "description")).thenReturn(entity);
+        when(pokeApiMapper.toEntity(any(), anyString())).thenReturn(entity);
         
         when(pokemonRepository.save(any(Pokemon.class))).thenAnswer(i -> i.getArguments()[0]);
         

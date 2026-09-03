@@ -35,7 +35,7 @@ public class LocalPokemonService {
         try {
             var data = pokeApiClient.getPokemonById(id);
             var species = pokeApiClient.getPokemonSpecies(id);
-            String description = pokeApiMapper.extractEnglishDescription(species);
+            String description = species.getEnglishDescription();
 
             Pokemon entity = pokeApiMapper.toEntity(data, description);
             entity.setSyncedAt(LocalDateTime.now());

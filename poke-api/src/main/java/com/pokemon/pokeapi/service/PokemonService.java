@@ -36,13 +36,13 @@ public class PokemonService {
         if (response.results() != null) {
             for (var item : response.results()) {
                 String url = item.url();
-                Long id = pokeApiMapper.extractIdFromUrl(url);
+                Long id = item.extractId();
                 if (id != null) {
                     try {
                         PokeApiPokemonDTO detail = pokeApiClient.getPokemonById(id);
                         content.add(mapToListItemDTO(detail));
                     } catch (Exception e) {
-                        // Skip if detail fails
+                        e.printStackTrace();
                     }
                 }
             }
@@ -56,18 +56,18 @@ public class PokemonService {
             PokeApiPokemonDTO data = pokeApiClient.getPokemonById(id);
             PokeApiSpeciesDTO species = pokeApiClient.getPokemonSpecies(id);
             
-            String description = pokeApiMapper.extractEnglishDescription(species);
+            String description = species.getEnglishDescription();
             
             List<EvolutionNodeDTO> evolutionChain = new ArrayList<>();
             if (species != null && species.evolutionChain() != null && species.evolutionChain().url() != null) {
                 String url = species.evolutionChain().url();
                 PokeApiEvolutionChainDataDTO chainData = pokeApiClient.getEvolutionChain(url);
-                evolutionChain = pokeApiMapper.parseEvolutionChain(chainData);
+                evolutionChain = chainData.flattenChain();
             }
 
             return mapToDetailDTO(data, description, evolutionChain);
         } catch (Exception e) {
-            throw new ResourceNotFoundException("Pokemon not found with id: " + id);
+            e.printStackTrace(); throw new ResourceNotFoundException("Pokemon not found with id: " + id);
         }
     }
 

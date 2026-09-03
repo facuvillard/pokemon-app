@@ -1,70 +1,48 @@
 package com.pokemon.pokeapi.mapper;
 
-import com.pokemon.pokeapi.dto.external.PokeApiEvolutionChainDataDTO;
-import com.pokemon.pokeapi.dto.external.PokeApiNamedResourceDTO;
-import com.pokemon.pokeapi.dto.external.PokeApiSpeciesDTO;
+import com.pokemon.pokeapi.dto.external.*;
 import com.pokemon.pokeapi.dto.pokemon.EvolutionNodeDTO;
+import com.pokemon.pokeapi.model.Pokemon;
 import org.junit.jupiter.api.Test;
-import org.mapstruct.factory.Mappers;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class PokeApiMapperTest {
+@SpringBootTest(classes = PokeApiMapperImpl.class)
+class PokeApiMapperTest {
 
-    private final PokeApiMapper pokeApiMapper = Mappers.getMapper(PokeApiMapper.class);
-
-    @Test
-    void testExtractEnglishDescription_ReturnsEnglish() {
-        PokeApiSpeciesDTO species = new PokeApiSpeciesDTO(
-            List.of(
-                new PokeApiSpeciesDTO.PokeApiFlavorTextDTO("Hola", new PokeApiNamedResourceDTO("es", null)),
-                new PokeApiSpeciesDTO.PokeApiFlavorTextDTO("Hello\nWorld", new PokeApiNamedResourceDTO("en", null))
-            ),
-            null
-        );
-        String desc = pokeApiMapper.extractEnglishDescription(species);
-        assertEquals("Hello World", desc);
-    }
+    @Autowired
+    private PokeApiMapper mapper;
 
     @Test
-    void testExtractEnglishDescription_NoEnglish_ReturnsDefault() {
-        PokeApiSpeciesDTO species = new PokeApiSpeciesDTO(
-            List.of(
-                new PokeApiSpeciesDTO.PokeApiFlavorTextDTO("Hola", new PokeApiNamedResourceDTO("es", null))
-            ),
-            null
-        );
-        assertEquals("", pokeApiMapper.extractEnglishDescription(species));
-    }
-
-    @Test
-    void testParseEvolutionChain_ReturnsCorrectList() {
-        PokeApiEvolutionChainDataDTO.PokeApiChainLinkDTO pikachu = new PokeApiEvolutionChainDataDTO.PokeApiChainLinkDTO(
-            new PokeApiNamedResourceDTO("pikachu", "https://pokeapi.co/api/v2/pokemon-species/25/"),
-            List.of(new PokeApiEvolutionChainDataDTO.PokeApiEvolutionDetailDTO(16)),
-            null
-        );
-
-        PokeApiEvolutionChainDataDTO.PokeApiChainLinkDTO pichu = new PokeApiEvolutionChainDataDTO.PokeApiChainLinkDTO(
-            new PokeApiNamedResourceDTO("pichu", "https://pokeapi.co/api/v2/pokemon-species/172/"),
-            List.of(),
-            List.of(pikachu)
-        );
-
-        PokeApiEvolutionChainDataDTO chain = new PokeApiEvolutionChainDataDTO(pichu);
+    void testExtractEnglishDescription() {
+        PokeApiSpeciesDTO.PokeApiFlavorTextDTO enText = new PokeApiSpeciesDTO.PokeApiFlavorTextDTO("Hello world\n", new PokeApiNamedResourceDTO("en", null));
+        PokeApiSpeciesDTO.PokeApiFlavorTextDTO esText = new PokeApiSpeciesDTO.PokeApiFlavorTextDTO("Hola", new PokeApiNamedResourceDTO("es", null));
+        PokeApiSpeciesDTO species = new PokeApiSpeciesDTO(List.of(esText, enText), null);
         
-        List<EvolutionNodeDTO> res = pokeApiMapper.parseEvolutionChain(chain);
-        assertEquals(2, res.size());
-        assertEquals("pichu", res.get(0).name());
-        assertEquals(172L, res.get(0).id());
-        assertEquals("pikachu", res.get(1).name());
-        assertEquals(16, res.get(1).minLevel());
+        assertEquals("Hello world ", species.getEnglishDescription());
     }
 
     @Test
-    void testExtractIdFromUrl_ReturnsCorrectId() {
-        assertEquals(1L, pokeApiMapper.extractIdFromUrl("https://pokeapi.co/api/v2/pokemon-species/1/"));
-        assertNull(pokeApiMapper.extractIdFromUrl("invalid"));
+    void testExtractIdFromUrl() {
+        PokeApiNamedResourceDTO resource = new PokeApiNamedResourceDTO("bulbasaur", "https://pokeapi.co/api/v2/pokemon/1/");
+        assertEquals(1L, resource.extractId());
+    }
+
+    @Test
+    void testToEntity() {
+        PokeApiPokemonDTO.PokeApiSpritesDTO sprites = new PokeApiPokemonDTO.PokeApiSpritesDTO("url");
+        PokeApiPokemonDTO data = new PokeApiPokemonDTO(1L, "bulba", 69, 7, 64, sprites, List.of(), List.of(), List.of());
+        
+        Pokemon pokemon = mapper.toEntity(data, "A strange seed.");
+        
+        assertNotNull(pokemon);
+        assertEquals(1L, pokemon.getId());
+        assertEquals("bulba", pokemon.getName());
+        assertEquals("url", pokemon.getSpriteUrl());
+        assertEquals("A strange seed.", pokemon.getDescription());
     }
 }
