@@ -9,7 +9,8 @@ pokemon-app/
 ├── poke-api/          # Java Spring Boot Backend
 │   ├── src/
 │   │   ├── main/java/com/pokemon/pokeapi/
-│   │   ├── controller/    # REST controllers
+│   │   │   ├── client/        # External API clients
+│   │   │   ├── controller/    # REST controllers
 │   │   │   ├── service/       # Business logic
 │   │   │   ├── dto/           # Java Records (request/response)
 │   │   │   ├── mapper/        # MapStruct mappers
