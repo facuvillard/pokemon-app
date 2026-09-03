@@ -19,7 +19,7 @@ public class PokemonRepositoryTest {
     private PokemonRepository pokemonRepository;
 
     @Test
-    void findByNameContainingIgnoreCase_ReturnsMatches() {
+    void searchByAllVisibleFields_ReturnsMatches() {
         Pokemon p1 = Pokemon.builder()
                 .id(1L).name("Bulbasaur").baseExperience(64).height(7).weight(69)
                 .build();
@@ -29,20 +29,20 @@ public class PokemonRepositoryTest {
         pokemonRepository.save(p1);
         pokemonRepository.save(p2);
 
-        Page<Pokemon> result = pokemonRepository.findByNameContainingIgnoreCase("saur", PageRequest.of(0, 10));
+        Page<Pokemon> result = pokemonRepository.searchByAllVisibleFields("saur", PageRequest.of(0, 10));
 
         assertNotNull(result);
         assertEquals(2, result.getTotalElements());
     }
 
     @Test
-    void findByNameContainingIgnoreCase_NoMatches_ReturnsEmpty() {
+    void searchByAllVisibleFields_NoMatches_ReturnsEmpty() {
         Pokemon p1 = Pokemon.builder()
                 .id(1L).name("Bulbasaur").baseExperience(64).height(7).weight(69)
                 .build();
         pokemonRepository.save(p1);
 
-        Page<Pokemon> result = pokemonRepository.findByNameContainingIgnoreCase("mew", PageRequest.of(0, 10));
+        Page<Pokemon> result = pokemonRepository.searchByAllVisibleFields("mew", PageRequest.of(0, 10));
 
         assertNotNull(result);
         assertEquals(0, result.getTotalElements());

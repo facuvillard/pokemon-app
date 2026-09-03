@@ -70,7 +70,7 @@ public class LocalPokemonService {
 
     public Page<LocalPokemonDTO> searchLocalPokemon(String query, int page, int size, String sortBy, String sortDir) {
         org.springframework.data.domain.Sort sort = org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.fromString(sortDir), sortBy);
-        return pokemonRepository.findByNameContainingIgnoreCase(query, org.springframework.data.domain.PageRequest.of(page, size, sort))
+        return pokemonRepository.searchByAllVisibleFields(query, org.springframework.data.domain.PageRequest.of(page, size, sort))
                 .map(pokemonMapper::toLocalPokemonDTO);
     }
 
