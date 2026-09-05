@@ -9,6 +9,7 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { register } = useAuth();
@@ -16,13 +17,21 @@ export default function RegisterPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setFieldErrors({});
     setLoading(true);
-    
+
     try {
       await register(username, email, password);
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to register account');
+      const data = err.response?.data;
+      // Field-level validation errors from backend
+      if (data?.details && typeof data.details === 'object') {
+        setFieldErrors(data.details);
+        setError('Please fix the validation errors below.');
+      } else {
+        setError(data?.message || 'Failed to register account');
+      }
     } finally {
       setLoading(false);
     }
@@ -47,26 +56,31 @@ export default function RegisterPage() {
         <form onSubmit={handleSubmit}>
           <TextInput
             label="Username"
-            placeholder="Your username"
+            placeholder="Your username (min. 3 characters)"
             required
             value={username}
             onChange={(e) => setUsername(e.currentTarget.value)}
+            error={fieldErrors.username}
           />
           <TextInput
             label="Email"
             placeholder="your@email.com"
             required
             mt="md"
+            type="email"
             value={email}
             onChange={(e) => setEmail(e.currentTarget.value)}
+            error={fieldErrors.email}
           />
           <PasswordInput
             label="Password"
+            description="Minimum 6 characters"
             placeholder="Your password"
             required
             mt="md"
             value={password}
             onChange={(e) => setPassword(e.currentTarget.value)}
+            error={fieldErrors.password}
           />
           <Button fullWidth mt="xl" type="submit" loading={loading}>
             Register
