@@ -42,20 +42,5 @@ public class Pokemon {
     @OneToMany(mappedBy = "pokemon", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PokemonStat> stats;
 
-    @Column(name = "custom_name")
-    private String customName;
 
-    private String region;
-
-    @Column(name = "classification_tag")
-    private String classificationTag;
-
-    @Column(columnDefinition = "TEXT")
-    private String notes;
-
-    @Column(name = "synced_at")
-    private LocalDateTime syncedAt;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
 }

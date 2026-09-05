@@ -48,7 +48,12 @@ public class PokemonMapperTest {
                 .stats(List.of(stat))
                 .build();
 
-        LocalPokemonDTO dto = mapper.toLocalPokemonDTO(pokemon);
+        com.pokemon.pokeapi.model.UserPokemon userPokemon = com.pokemon.pokeapi.model.UserPokemon.builder()
+                .pokemon(pokemon)
+                .customName("Bulby")
+                .build();
+
+        LocalPokemonDTO dto = mapper.toLocalPokemonDTO(userPokemon);
 
         assertNotNull(dto);
         assertEquals(1L, dto.id());
@@ -58,6 +63,7 @@ public class PokemonMapperTest {
         assertEquals(69, dto.weight());
         assertEquals("grass", dto.types().get(0));
         assertEquals("url", dto.spriteUrl());
+        assertEquals("Bulby", dto.customName());
         assertNotNull(dto.stats());
         assertEquals(1, dto.stats().size());
         assertEquals("hp", dto.stats().get(0).name());

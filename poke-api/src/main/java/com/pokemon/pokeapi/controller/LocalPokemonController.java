@@ -8,6 +8,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -19,14 +21,14 @@ public class LocalPokemonController {
 
     @PostMapping("/sync/{id}")
     @ResponseStatus(HttpStatus.CREATED)
-    public LocalPokemonDTO syncPokemon(@PathVariable long id) {
-        return localPokemonService.syncPokemon(id);
+    public LocalPokemonDTO syncPokemon(@PathVariable long id, @AuthenticationPrincipal UserDetails userDetails) {
+        return localPokemonService.syncPokemon(id, userDetails.getUsername());
     }
 
     @PostMapping("/sync/batch")
     @ResponseStatus(HttpStatus.CREATED)
-    public java.util.List<LocalPokemonDTO> syncBatch(@Valid @RequestBody SyncBatchRequestDTO request) {
-        return localPokemonService.syncPokemonBatch(request.ids());
+    public java.util.List<LocalPokemonDTO> syncBatch(@Valid @RequestBody SyncBatchRequestDTO request, @AuthenticationPrincipal UserDetails userDetails) {
+        return localPokemonService.syncPokemonBatch(request.ids(), userDetails.getUsername());
     }
 
     @GetMapping
@@ -34,8 +36,9 @@ public class LocalPokemonController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "id") String sortBy,
-            @RequestParam(defaultValue = "asc") String sortDir) {
-        return localPokemonService.getAllLocalPokemon(page, size, sortBy, sortDir);
+            @RequestParam(defaultValue = "asc") String sortDir,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        return localPokemonService.getAllLocalPokemon(page, size, sortBy, sortDir, userDetails.getUsername());
     }
 
     @GetMapping("/search")
@@ -44,23 +47,24 @@ public class LocalPokemonController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "id") String sortBy,
-            @RequestParam(defaultValue = "asc") String sortDir) {
-        return localPokemonService.searchLocalPokemon(query, page, size, sortBy, sortDir);
+            @RequestParam(defaultValue = "asc") String sortDir,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        return localPokemonService.searchLocalPokemon(query, page, size, sortBy, sortDir, userDetails.getUsername());
     }
 
     @GetMapping("/{id}")
-    public LocalPokemonDTO getLocalPokemonById(@PathVariable long id) {
-        return localPokemonService.getLocalPokemonById(id);
+    public LocalPokemonDTO getLocalPokemonById(@PathVariable long id, @AuthenticationPrincipal UserDetails userDetails) {
+        return localPokemonService.getLocalPokemonById(id, userDetails.getUsername());
     }
 
     @PutMapping("/{id}")
-    public LocalPokemonDTO updateLocalPokemon(@PathVariable long id, @Valid @RequestBody UpdatePokemonDTO dto) {
-        return localPokemonService.updateLocalPokemon(id, dto);
+    public LocalPokemonDTO updateLocalPokemon(@PathVariable long id, @Valid @RequestBody UpdatePokemonDTO dto, @AuthenticationPrincipal UserDetails userDetails) {
+        return localPokemonService.updateLocalPokemon(id, dto, userDetails.getUsername());
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteLocalPokemon(@PathVariable long id) {
-        localPokemonService.deleteLocalPokemon(id);
+    public void deleteLocalPokemon(@PathVariable long id, @AuthenticationPrincipal UserDetails userDetails) {
+        localPokemonService.deleteLocalPokemon(id, userDetails.getUsername());
     }
 }

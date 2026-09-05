@@ -6,54 +6,73 @@ import com.pokemon.pokeapi.exception.BadRequestException;
 import com.pokemon.pokeapi.exception.ResourceNotFoundException;
 import com.pokemon.pokeapi.mapper.PokemonMapper;
 import com.pokemon.pokeapi.model.Pokemon;
+import com.pokemon.pokeapi.model.User;
+import com.pokemon.pokeapi.model.UserPokemon;
 import com.pokemon.pokeapi.repository.PokemonRepository;
+import com.pokemon.pokeapi.repository.UserPokemonRepository;
+import com.pokemon.pokeapi.repository.UserRepository;
 import com.pokemon.pokeapi.mapper.PokeApiMapper;
 import com.pokemon.pokeapi.client.PokeApiClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class LocalPokemonService {
 
     private final PokemonRepository pokemonRepository;
+    private final UserPokemonRepository userPokemonRepository;
+    private final UserRepository userRepository;
     private final PokeApiClient pokeApiClient;
     private final PokemonMapper pokemonMapper;
     private final PokeApiMapper pokeApiMapper;
 
-    public LocalPokemonDTO syncPokemon(long id) {
-        if (pokemonRepository.existsById(id)) {
-            throw new BadRequestException("Pokemon already synced");
-        }
-
-        try {
-            var data = pokeApiClient.getPokemonById(id);
-            var species = pokeApiClient.getPokemonSpecies(id);
-            String description = species.getEnglishDescription();
-
-            Pokemon entity = pokeApiMapper.toEntity(data, description);
-            entity.setSyncedAt(LocalDateTime.now());
-
-            return pokemonMapper.toLocalPokemonDTO(pokemonRepository.save(entity));
-        } catch (BadRequestException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new BadRequestException("Failed to sync pokemon from external API: " + e.getMessage());
-        }
+    private User getUser(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + username));
     }
 
-    public List<LocalPokemonDTO> syncPokemonBatch(List<Long> ids) {
+    @Transactional
+    public LocalPokemonDTO syncPokemon(long id, String username) {
+        User user = getUser(username);
+
+        Pokemon pokemon = pokemonRepository.findById(id).orElseGet(() -> {
+            try {
+                var data = pokeApiClient.getPokemonById(id);
+                var species = pokeApiClient.getPokemonSpecies(id);
+                String description = species.getEnglishDescription();
+                Pokemon entity = pokeApiMapper.toEntity(data, description);
+                return pokemonRepository.save(entity);
+            } catch (Exception e) {
+                throw new BadRequestException("Failed to sync pokemon from external API: " + e.getMessage());
+            }
+        });
+
+        if (userPokemonRepository.existsByUserAndPokemon(user, pokemon)) {
+            throw new BadRequestException("Pokemon already synced for this user");
+        }
+
+        UserPokemon userPokemon = UserPokemon.builder()
+                .user(user)
+                .pokemon(pokemon)
+                .syncedAt(LocalDateTime.now())
+                .build();
+
+        return pokemonMapper.toLocalPokemonDTO(userPokemonRepository.save(userPokemon));
+    }
+
+    @Transactional
+    public List<LocalPokemonDTO> syncPokemonBatch(List<Long> ids, String username) {
         return ids.stream()
-                .filter(id -> !pokemonRepository.existsById(id))
                 .map(id -> {
                     try {
-                        return syncPokemon(id);
+                        return syncPokemon(id, username);
                     } catch (Exception e) {
                         return null;
                     }
@@ -62,27 +81,32 @@ public class LocalPokemonService {
                 .toList();
     }
 
-    public Page<LocalPokemonDTO> getAllLocalPokemon(int page, int size, String sortBy, String sortDir) {
+    public Page<LocalPokemonDTO> getAllLocalPokemon(int page, int size, String sortBy, String sortDir, String username) {
+        User user = getUser(username);
         org.springframework.data.domain.Sort sort = org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.fromString(sortDir), sortBy);
-        return pokemonRepository.findAll(org.springframework.data.domain.PageRequest.of(page, size, sort))
+        return userPokemonRepository.findByUser(user, org.springframework.data.domain.PageRequest.of(page, size, sort))
                 .map(pokemonMapper::toLocalPokemonDTO);
     }
 
-    public Page<LocalPokemonDTO> searchLocalPokemon(String query, int page, int size, String sortBy, String sortDir) {
+    public Page<LocalPokemonDTO> searchLocalPokemon(String query, int page, int size, String sortBy, String sortDir, String username) {
+        User user = getUser(username);
         org.springframework.data.domain.Sort sort = org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.fromString(sortDir), sortBy);
-        return pokemonRepository.searchByAllVisibleFields(query, org.springframework.data.domain.PageRequest.of(page, size, sort))
+        return userPokemonRepository.searchByUserAndAllFields(user, query, org.springframework.data.domain.PageRequest.of(page, size, sort))
                 .map(pokemonMapper::toLocalPokemonDTO);
     }
 
-    public LocalPokemonDTO getLocalPokemonById(long id) {
-        Pokemon entity = pokemonRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Pokemon not found with id: " + id));
+    public LocalPokemonDTO getLocalPokemonById(long id, String username) {
+        User user = getUser(username);
+        UserPokemon entity = userPokemonRepository.findByUserAndPokemon_Id(user, id)
+                .orElseThrow(() -> new ResourceNotFoundException("Pokemon not found with id: " + id + " for user: " + username));
         return pokemonMapper.toLocalPokemonDTO(entity);
     }
 
-    public LocalPokemonDTO updateLocalPokemon(long id, UpdatePokemonDTO dto) {
-        Pokemon entity = pokemonRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Pokemon not found with id: " + id));
+    @Transactional
+    public LocalPokemonDTO updateLocalPokemon(long id, UpdatePokemonDTO dto, String username) {
+        User user = getUser(username);
+        UserPokemon entity = userPokemonRepository.findByUserAndPokemon_Id(user, id)
+                .orElseThrow(() -> new ResourceNotFoundException("Pokemon not found with id: " + id + " for user: " + username));
 
         if (dto.customName() != null) entity.setCustomName(dto.customName());
         if (dto.region() != null) entity.setRegion(dto.region());
@@ -90,13 +114,14 @@ public class LocalPokemonService {
         if (dto.notes() != null) entity.setNotes(dto.notes());
 
         entity.setUpdatedAt(LocalDateTime.now());
-        return pokemonMapper.toLocalPokemonDTO(pokemonRepository.save(entity));
+        return pokemonMapper.toLocalPokemonDTO(userPokemonRepository.save(entity));
     }
 
-    public void deleteLocalPokemon(long id) {
-        if (!pokemonRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Pokemon not found with id: " + id);
-        }
-        pokemonRepository.deleteById(id);
+    @Transactional
+    public void deleteLocalPokemon(long id, String username) {
+        User user = getUser(username);
+        UserPokemon entity = userPokemonRepository.findByUserAndPokemon_Id(user, id)
+                .orElseThrow(() -> new ResourceNotFoundException("Pokemon not found with id: " + id + " for user: " + username));
+        userPokemonRepository.delete(entity);
     }
 }

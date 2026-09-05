@@ -40,23 +40,26 @@ public class LocalPokemonControllerTest {
     private com.pokemon.pokeapi.security.CustomUserDetailsService customUserDetailsService;
 
     @Test
+    @org.springframework.security.test.context.support.WithMockUser(username = "testuser")
     void testSyncPokemon_Returns201() throws Exception {
-        when(localPokemonService.syncPokemon(1L)).thenReturn(mock(LocalPokemonDTO.class));
+        when(localPokemonService.syncPokemon(1L, "testuser")).thenReturn(mock(LocalPokemonDTO.class));
         mockMvc.perform(post("/api/v1/local/pokemon/sync/1"))
                .andExpect(status().isCreated());
     }
 
     @Test
+    @org.springframework.security.test.context.support.WithMockUser(username = "testuser")
     void testGetLocalPokemon_Returns200() throws Exception {
-        when(localPokemonService.getLocalPokemonById(1L)).thenReturn(mock(LocalPokemonDTO.class));
+        when(localPokemonService.getLocalPokemonById(1L, "testuser")).thenReturn(mock(LocalPokemonDTO.class));
         mockMvc.perform(get("/api/v1/local/pokemon/1"))
                .andExpect(status().isOk());
     }
 
     @Test
+    @org.springframework.security.test.context.support.WithMockUser(username = "testuser")
     void testUpdateLocalPokemon_Returns200() throws Exception {
         UpdatePokemonDTO dto = new UpdatePokemonDTO("c", "r", "t", "n");
-        when(localPokemonService.updateLocalPokemon(eq(1L), any(UpdatePokemonDTO.class))).thenReturn(mock(LocalPokemonDTO.class));
+        when(localPokemonService.updateLocalPokemon(eq(1L), any(UpdatePokemonDTO.class), eq("testuser"))).thenReturn(mock(LocalPokemonDTO.class));
         
         mockMvc.perform(put("/api/v1/local/pokemon/1")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -65,9 +68,10 @@ public class LocalPokemonControllerTest {
     }
 
     @Test
+    @org.springframework.security.test.context.support.WithMockUser(username = "testuser")
     void testUpdateLocalPokemon_NotFound_Returns404() throws Exception {
         UpdatePokemonDTO dto = new UpdatePokemonDTO("c", "r", "t", "n");
-        when(localPokemonService.updateLocalPokemon(eq(1L), any())).thenThrow(new ResourceNotFoundException("Not found"));
+        when(localPokemonService.updateLocalPokemon(eq(1L), any(), eq("testuser"))).thenThrow(new ResourceNotFoundException("Not found"));
         
         mockMvc.perform(put("/api/v1/local/pokemon/1")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -76,6 +80,7 @@ public class LocalPokemonControllerTest {
     }
 
     @Test
+    @org.springframework.security.test.context.support.WithMockUser(username = "testuser")
     void testDeleteLocalPokemon_Returns204() throws Exception {
         mockMvc.perform(delete("/api/v1/local/pokemon/1"))
                .andExpect(status().isNoContent());
