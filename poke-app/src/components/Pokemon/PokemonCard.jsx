@@ -18,12 +18,19 @@ export default function PokemonCard({ pokemon }) {
       padding="lg"
       radius="md"
       withBorder
-      style={{ cursor: 'pointer', transition: 'box-shadow 0.2s ease' }}
-      onMouseEnter={(e) => (e.currentTarget.style.boxShadow = 'var(--mantine-shadow-md)')}
-      onMouseLeave={(e) => (e.currentTarget.style.boxShadow = 'var(--mantine-shadow-sm)')}
+      style={{ cursor: 'pointer', transition: 'transform 0.15s ease, box-shadow 0.15s ease' }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = 'translateY(-3px)';
+        e.currentTarget.style.boxShadow = 'var(--mantine-shadow-lg)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = 'translateY(0)';
+        e.currentTarget.style.boxShadow = '';
+      }}
       onClick={() => navigate(`/pokemon/${pokemon.id}`)}
     >
-      <Card.Section bg="var(--mantine-color-gray-1)">
+      {/* Sprite background — adapts to dark/light via Mantine color vars */}
+      <Card.Section bg="var(--mantine-color-default-hover)">
         <Image
           src={pokemon.spriteUrl || 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png'}
           h={140}
@@ -40,7 +47,7 @@ export default function PokemonCard({ pokemon }) {
 
       <Group gap="xs" mb="md">
         {pokemon.types?.map((type) => (
-          <Badge key={type} bg={TYPE_COLORS[type.toLowerCase()] || 'gray'}>
+          <Badge key={type} bg={TYPE_COLORS[type.toLowerCase()] || 'gray'} style={{ color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,0.4)' }}>
             {type}
           </Badge>
         ))}
@@ -51,7 +58,7 @@ export default function PokemonCard({ pokemon }) {
           Weight: {pokemon.weight ? pokemon.weight / 10 : '?'} kg
         </Text>
         {pokemon.abilities && pokemon.abilities.length > 0 && (
-          <Group gap={4}>
+          <Group gap={4} wrap="wrap">
             <Text size="sm" c="dimmed">Abilities: </Text>
             {pokemon.abilities.map((ability) => (
               <Badge key={ability} variant="outline" size="sm" tt="capitalize">{ability}</Badge>

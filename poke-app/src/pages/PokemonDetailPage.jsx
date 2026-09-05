@@ -88,7 +88,7 @@ export default function PokemonDetailPage() {
       <Paper shadow="sm" radius="md" p="xl" withBorder>
         <Grid gutter="xl">
           <Grid.Col span={{ base: 12, md: 5 }}>
-            <Center bg="var(--mantine-color-gray-0)" style={{ borderRadius: 'var(--mantine-radius-md)' }} p="xl">
+            <Center bg="var(--mantine-color-default-hover)" style={{ borderRadius: 'var(--mantine-radius-md)' }} p="xl">
               <Image
                 src={pokemon.spriteUrl || 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png'}
                 h={300}
@@ -140,7 +140,7 @@ export default function PokemonDetailPage() {
                 <Stack gap="md">
                   <Text>{pokemon.description || "No description available."}</Text>
                   
-                  <Paper withBorder p="md" radius="md" bg="var(--mantine-color-gray-0)">
+                  <Paper withBorder p="md" radius="md" bg="var(--mantine-color-default-hover)">
                     <Grid>
                       <Grid.Col span={6}>
                         <Text size="sm" c="dimmed">Height</Text>

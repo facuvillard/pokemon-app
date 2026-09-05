@@ -16,7 +16,7 @@ const SIDEBAR_MINI = 64;
 
 export default function AppLayout() {
   const [collapsed, { toggle }] = useDisclosure(false);
-  const { isAuthenticated, user, logout } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -30,87 +30,114 @@ export default function AppLayout() {
     { label: 'My Pokémon', icon: IconList, to: '/my-pokemon' },
   ];
 
-  const sidebarWidth = collapsed ? SIDEBAR_MINI : SIDEBAR_FULL;
-
   return (
     <AppShell
-      navbar={{ width: sidebarWidth, breakpoint: 'xs' }}
+      navbar={{ width: collapsed ? SIDEBAR_MINI : SIDEBAR_FULL, breakpoint: 'xs' }}
       padding="md"
     >
       <AppShell.Navbar
-        p={collapsed ? 'xs' : 'md'}
         style={{ transition: 'width 200ms ease', overflow: 'hidden' }}
+        p={0}
       >
-        {/* Header: burger + logo */}
-        <AppShell.Section>
-          <Group justify={collapsed ? 'center' : 'space-between'} mb="xl" mt={4} wrap="nowrap">
-            {!collapsed && (
-              <Group gap="xs" wrap="nowrap">
-                <IconPokeball size={28} color="#f22529" />
-                <Text size="lg" fw={800} style={{ whiteSpace: 'nowrap' }}>PokéApp</Text>
-              </Group>
-            )}
-            <Burger
-              opened={!collapsed}
-              onClick={toggle}
-              size="sm"
-              aria-label="Toggle sidebar"
-            />
-          </Group>
-        </AppShell.Section>
+        {/* Inner wrapper keeps consistent padding but allows centering */}
+        <Box
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            height: '100%',
+            padding: '16px 8px',
+          }}
+        >
+          {/* Header: burger + logo */}
+          <Box mb="xl">
+            <Group
+              justify={collapsed ? 'center' : 'space-between'}
+              wrap="nowrap"
+              px={collapsed ? 0 : 4}
+            >
+              {!collapsed && (
+                <Group gap="xs" wrap="nowrap">
+                  <IconPokeball size={28} color="#f22529" />
+                  <Text size="lg" fw={800} style={{ whiteSpace: 'nowrap' }}>PokéApp</Text>
+                </Group>
+              )}
+              <Burger
+                opened={!collapsed}
+                onClick={toggle}
+                size="sm"
+                aria-label="Toggle sidebar"
+              />
+            </Group>
+          </Box>
 
-        {/* Nav Links */}
-        <AppShell.Section grow>
-          <Stack gap={4}>
-            {navItems.map((item) => {
-              const isActive = location.pathname === item.to;
-              return collapsed ? (
-                <Tooltip key={item.to} label={item.label} position="right" withArrow>
+          {/* Nav Links */}
+          <Box style={{ flex: 1 }}>
+            <Stack gap={4}>
+              {navItems.map((item) => {
+                const isActive = location.pathname === item.to;
+                return collapsed ? (
+                  <Tooltip key={item.to} label={item.label} position="right" withArrow>
+                    <Box
+                      component={RouterNavLink}
+                      to={item.to}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '100%',
+                        height: 40,
+                        borderRadius: 8,
+                        textDecoration: 'none',
+                        color: isActive ? 'var(--mantine-color-red-6)' : 'inherit',
+                        backgroundColor: isActive ? 'var(--mantine-color-red-0)' : 'transparent',
+                      }}
+                    >
+                      <item.icon size={20} stroke={1.5} />
+                    </Box>
+                  </Tooltip>
+                ) : (
                   <NavLink
+                    key={item.to}
                     component={RouterNavLink}
                     to={item.to}
-                    leftSection={<item.icon size={20} stroke={1.5} />}
+                    label={item.label}
+                    leftSection={<item.icon size={18} stroke={1.5} />}
                     active={isActive}
                     radius="md"
-                    style={{ justifyContent: 'center', padding: '10px 0' }}
+                    style={{ fontWeight: 500 }}
                   />
-                </Tooltip>
-              ) : (
-                <NavLink
-                  key={item.to}
-                  component={RouterNavLink}
-                  to={item.to}
-                  label={item.label}
-                  leftSection={<item.icon size={18} stroke={1.5} />}
-                  active={isActive}
-                  radius="md"
-                  style={{ fontWeight: 500 }}
-                />
-              );
-            })}
-          </Stack>
-        </AppShell.Section>
+                );
+              })}
+            </Stack>
+          </Box>
 
-        <Divider my="sm" />
+          <Divider my="sm" />
 
-        {/* Bottom: User info + actions */}
-        <AppShell.Section>
+          {/* Bottom section */}
           {collapsed ? (
             <Stack align="center" gap="sm">
               <ThemeToggle />
               <Tooltip label="Logout" position="right" withArrow>
-                <NavLink
-                  leftSection={<IconLogout size={20} stroke={1.5} />}
+                <Box
                   onClick={handleLogout}
-                  radius="md"
-                  color="red"
-                  style={{ justifyContent: 'center', padding: '10px 0' }}
-                />
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '100%',
+                    height: 40,
+                    borderRadius: 8,
+                    cursor: 'pointer',
+                    color: 'var(--mantine-color-red-6)',
+                  }}
+                >
+                  <IconLogout size={20} stroke={1.5} />
+                </Box>
               </Tooltip>
             </Stack>
           ) : (
             <>
-              <Group justify="space-between" align="center" mb="sm">
+              <Group justify="space-between" align="center" mb="sm" px={4}>
                 <Group gap="sm" wrap="nowrap">
                   <Avatar radius="xl" size="sm" color="red">
                     {user?.username?.[0]?.toUpperCase() || <IconUser size={14} />}
@@ -133,7 +160,7 @@ export default function AppLayout() {
               />
             </>
           )}
-        </AppShell.Section>
+        </Box>
       </AppShell.Navbar>
 
       <AppShell.Main>
