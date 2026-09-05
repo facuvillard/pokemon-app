@@ -1,5 +1,6 @@
-import { Card, Image, Text, Badge, Group, Stack } from '@mantine/core';
+import { Card, Image, Text, Badge, Group, Stack, ActionIcon, Tooltip } from '@mantine/core';
 import { useNavigate } from 'react-router-dom';
+import { IconCloudDownload, IconCheck } from '@tabler/icons-react';
 
 export const TYPE_COLORS = {
   normal: '#A8A878', fire: '#F08030', water: '#6890F0', electric: '#F8D030',
@@ -9,8 +10,13 @@ export const TYPE_COLORS = {
   steel: '#B8B8D0', fairy: '#EE99AC',
 };
 
-export default function PokemonCard({ pokemon }) {
+export default function PokemonCard({ pokemon, synced = false, onSync }) {
   const navigate = useNavigate();
+
+  const handleSync = async (e) => {
+    e.stopPropagation();
+    if (onSync) await onSync(pokemon.id);
+  };
 
   return (
     <Card
@@ -29,8 +35,7 @@ export default function PokemonCard({ pokemon }) {
       }}
       onClick={() => navigate(`/pokemon/${pokemon.id}`)}
     >
-      {/* Sprite background — adapts to dark/light via Mantine color vars */}
-      <Card.Section bg="var(--mantine-color-default-hover)">
+      <Card.Section bg="var(--mantine-color-default-hover)" style={{ position: 'relative' }}>
         <Image
           src={pokemon.spriteUrl || 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png'}
           h={140}
@@ -38,6 +43,30 @@ export default function PokemonCard({ pokemon }) {
           fit="contain"
           fallbackSrc="https://placehold.co/140x140?text=No+Image"
         />
+        {/* Sync button — top right of the sprite */}
+        {onSync && (
+          <Tooltip
+            label={synced ? 'Already synced' : 'Sync to My Collection'}
+            position="left"
+            withArrow
+          >
+            <ActionIcon
+              variant={synced ? 'filled' : 'light'}
+              color={synced ? 'green' : 'blue'}
+              size="md"
+              radius="md"
+              disabled={synced}
+              onClick={handleSync}
+              style={{
+                position: 'absolute',
+                top: 8,
+                right: 8,
+              }}
+            >
+              {synced ? <IconCheck size={16} /> : <IconCloudDownload size={16} />}
+            </ActionIcon>
+          </Tooltip>
+        )}
       </Card.Section>
 
       <Group justify="space-between" mt="md" mb="xs">
@@ -47,7 +76,11 @@ export default function PokemonCard({ pokemon }) {
 
       <Group gap="xs" mb="md">
         {pokemon.types?.map((type) => (
-          <Badge key={type} bg={TYPE_COLORS[type.toLowerCase()] || 'gray'} style={{ color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,0.4)' }}>
+          <Badge
+            key={type}
+            bg={TYPE_COLORS[type.toLowerCase()] || 'gray'}
+            style={{ color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,0.4)' }}
+          >
             {type}
           </Badge>
         ))}

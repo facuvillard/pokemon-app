@@ -5,6 +5,7 @@ export const pokemonService = {
   searchPokemon: (query, page = 0, size = 20) => api.get(`/pokemon/search?query=${query}&page=${page}&size=${size}`),
   getPokemonDetail: (id) => api.get(`/pokemon/${id}`),
   syncPokemon: (id) => api.post(`/local/pokemon/sync/${id}`),
+  getSyncedIds: () => api.get('/local/pokemon/synced-ids'),
   getLocalPokemon: (page = 0, size = 20, sortBy = 'id', sortDir = 'asc') => api.get(`/local/pokemon?page=${page}&size=${size}&sortBy=${sortBy}&sortDir=${sortDir}`),
   searchLocalPokemon: (query, page = 0, size = 20, sortBy = 'id', sortDir = 'asc') => api.get(`/local/pokemon/search?query=${query}&page=${page}&size=${size}&sortBy=${sortBy}&sortDir=${sortDir}`),
   getLocalPokemonById: (id) => api.get(`/local/pokemon/${id}`),

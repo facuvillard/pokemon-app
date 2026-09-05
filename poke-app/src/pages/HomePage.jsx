@@ -1,10 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Title, TextInput, Grid, Pagination, Loader, Center, Container, Select, Group } from '@mantine/core';
 import { IconSearch } from '@tabler/icons-react';
+import { notifications } from '@mantine/notifications';
 import { pokemonService } from '../services/pokemonService';
+import { useAuth } from '../context/AuthContext';
 import PokemonCard from '../components/Pokemon/PokemonCard';
 
 export default function HomePage() {
+  const { isAuthenticated } = useAuth();
   const [pokemon, setPokemon] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -13,11 +16,14 @@ export default function HomePage() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [pageSize, setPageSize] = useState('20');
 
+  // Set of synced pokemon IDs for O(1) lookup
+  const [syncedIds, setSyncedIds] = useState(new Set());
+
   // Debounce search input
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(search);
-      setPage(1); // Reset page on new search
+      setPage(1);
     }, 500);
     return () => clearTimeout(handler);
   }, [search]);
@@ -25,26 +31,58 @@ export default function HomePage() {
   const fetchPokemon = async (pageNumber, query, size) => {
     setLoading(true);
     try {
-      const res = query 
+      const res = query
         ? await pokemonService.searchPokemon(query, pageNumber - 1, parseInt(size))
         : await pokemonService.listPokemon(pageNumber - 1, parseInt(size));
       setPokemon(res.data.content);
       setTotalPages(res.data.totalPages);
     } catch (error) {
-      console.error("Error fetching pokemon", error);
+      console.error('Error fetching pokemon', error);
     } finally {
       setLoading(false);
     }
   };
 
+  const fetchSyncedIds = useCallback(async () => {
+    if (!isAuthenticated) return;
+    try {
+      const res = await pokemonService.getSyncedIds();
+      setSyncedIds(new Set(res.data));
+    } catch (error) {
+      console.error('Error fetching synced IDs', error);
+    }
+  }, [isAuthenticated]);
+
   useEffect(() => {
     fetchPokemon(page, debouncedSearch, pageSize);
   }, [page, debouncedSearch, pageSize]);
 
+  useEffect(() => {
+    fetchSyncedIds();
+  }, [fetchSyncedIds]);
+
+  const handleSync = async (pokemonId) => {
+    try {
+      await pokemonService.syncPokemon(pokemonId);
+      setSyncedIds((prev) => new Set([...prev, pokemonId]));
+      notifications.show({
+        title: 'Synced!',
+        message: `Pokémon added to your collection.`,
+        color: 'green',
+      });
+    } catch (error) {
+      notifications.show({
+        title: 'Sync failed',
+        message: error.response?.data?.message || 'Failed to sync Pokémon',
+        color: 'red',
+      });
+    }
+  };
+
   return (
     <Container size="xl">
       <Title order={1} mb="lg" ta="center">Pokédex</Title>
-      
+
       <TextInput
         placeholder="Search Pokémon..."
         leftSection={<IconSearch size={16} />}
@@ -67,9 +105,13 @@ export default function HomePage() {
             </Center>
           ) : (
             <Grid>
-              {pokemon.map(p => (
+              {pokemon.map((p) => (
                 <Grid.Col key={p.id} span={{ base: 12, sm: 6, md: 4, lg: 3 }}>
-                  <PokemonCard pokemon={p} />
+                  <PokemonCard
+                    pokemon={p}
+                    synced={syncedIds.has(p.id)}
+                    onSync={isAuthenticated ? handleSync : null}
+                  />
                 </Grid.Col>
               ))}
             </Grid>
@@ -86,7 +128,7 @@ export default function HomePage() {
                 data={[
                   { value: '20', label: '20 / page' },
                   { value: '50', label: '50 / page' },
-                  { value: '100', label: '100 / page' }
+                  { value: '100', label: '100 / page' },
                 ]}
                 w={120}
               />

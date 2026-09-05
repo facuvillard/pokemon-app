@@ -38,6 +38,11 @@ public class LocalPokemonService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + username));
     }
 
+    public List<Long> getSyncedPokemonIds(String username) {
+        User user = getUser(username);
+        return userPokemonRepository.findSyncedPokemonIdsByUser(user);
+    }
+
     @Transactional
     public LocalPokemonDTO syncPokemon(long id, String username) {
         User user = getUser(username);

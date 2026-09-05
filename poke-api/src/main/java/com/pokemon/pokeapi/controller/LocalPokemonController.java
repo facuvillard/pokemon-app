@@ -31,6 +31,11 @@ public class LocalPokemonController {
         return localPokemonService.syncPokemonBatch(request.ids(), userDetails.getUsername());
     }
 
+    @GetMapping("/synced-ids")
+    public java.util.List<Long> getSyncedIds(@AuthenticationPrincipal UserDetails userDetails) {
+        return localPokemonService.getSyncedPokemonIds(userDetails.getUsername());
+    }
+
     @GetMapping
     public Page<LocalPokemonDTO> listLocalPokemon(
             @RequestParam(defaultValue = "0") int page,

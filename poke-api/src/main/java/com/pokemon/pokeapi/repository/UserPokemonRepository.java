@@ -10,16 +10,21 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface UserPokemonRepository extends JpaRepository<UserPokemon, Long> {
+
     Page<UserPokemon> findByUser(User user, Pageable pageable);
-    
+
     boolean existsByUserAndPokemon(User user, Pokemon pokemon);
-    
+
     Optional<UserPokemon> findByUserAndPokemon_Id(User user, Long pokemonId);
-    
+
+    @Query("SELECT up.pokemon.id FROM UserPokemon up WHERE up.user = :user")
+    List<Long> findSyncedPokemonIdsByUser(@Param("user") User user);
+
     @Query("SELECT up FROM UserPokemon up WHERE up.user = :user AND (" +
            "LOWER(up.pokemon.name) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
            "LOWER(COALESCE(up.customName, '')) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
